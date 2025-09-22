@@ -15,11 +15,17 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('kategori.index')" :active="request()->routeIs('kategori')">
+                        {{ __('Kategori Buku') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('buku.index')" :active="request()->routeIs('buku.*')">
                         {{ __('Daftar Buku') }}
                     </x-nav-link>
                     <x-nav-link :href="route('peminjaman.index')" :active="request()->routeIs('peminjaman.*')">
                         {{ __('Peminjaman Buku') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('siswa.index')" :active="request()->routeIs('siswa.*')">
+                        {{ __('Data Siswa') }}
                     </x-nav-link>
                 </div>
             </div>

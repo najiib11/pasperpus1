@@ -4,23 +4,34 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Buku;
+use App\Models\Kategori;
+use Illuminate\Support\Facades\Cookie;
 
 class BukuController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-     public function index()
+    public function index()
     {
-        $buku = Buku::all();
-        return view('buku.index', compact('buku'));
+        $kategoris = Buku::with('kategori')->get();
+        return view('buku.index', ["kategoris" => $kategoris]);
     }
 
-    public function create()
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(Request $request) // <- tambahkan Request $request
     {
-        return view('buku.create');
+        $kategori_id = $request->get('kategori_id'); // baca kategori_id dari query string
+        $kategoris = Kategori::all();
+
+        return view('buku.create', compact('kategoris', 'kategori_id'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -30,6 +41,7 @@ class BukuController extends Controller
             'tahun_terbit' => 'required|digits:4|integer',
             'jumlah_halaman' => 'required|integer',
             'sumber_pengadaan' => 'required|in:hibah,pemerintah',
+            'kategori_id' => 'nullable|exists:kategoris,id',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -41,9 +53,14 @@ class BukuController extends Controller
             $data['gambar'] = $path;
         }
 
-        Buku::create($data);
+        $created = Buku::create($data);
 
-        return redirect()->route('buku.index')->with('success', 'Buku berhasil ditambahkan!');
+
+        if($created){
+            return redirect()->route("buku.index")->with('success', 'Buku berhasil ditambahkan!');
+        }
+
+
+        return redirect()->route('buku.index')->with('failure', 'Buku Gagal ditambahkan!');
     }
-
 }

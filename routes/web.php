@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SiswaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\PeminjamanController;
@@ -22,12 +24,20 @@ Route::middleware('auth')->group(function () {
 Route::resource('buku', BukuController::class);
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
-    Route::get('/peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
-    Route::post('/peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
-    Route::get('/peminjaman/{id}/edit', [PeminjamanController::class, 'edit'])->name('peminjaman.edit');
-    Route::put('/peminjaman/{id}', [PeminjamanController::class, 'update'])->name('peminjaman.update');
-    Route::post('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.kembalikan');
+    Route::resource('peminjaman', PeminjamanController::class);
+    Route::post('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])
+        ->name('peminjaman.kembalikan');
+});
+
+Route::resource('kategori', KategoriController::class);
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('siswa', SiswaController::class);
+
+    // Route tambahan untuk cetak
+    Route::get('siswa/{siswa}/cetak', [SiswaController::class, 'cetak'])->name('siswa.cetak');
+    // Route::get('/siswa/{siswa}/cetak-img', [SiswaController::class, 'cetakImg'])->name('siswa.cetak.img');
+
 });
 
 

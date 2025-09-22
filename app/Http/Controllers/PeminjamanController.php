@@ -74,9 +74,23 @@ class PeminjamanController extends Controller
             'buku_id' => 'required|exists:buku,id',
             'tanggal_pinjam' => 'required|date',
             'tenggat' => 'required|date',
+            'status' => 'required|in:dipinjam,dikembalikan,reservasi',
         ]);
 
-        $peminjaman->update($request->all());
+        $data = $request->only([
+            'user_id',
+            'buku_id',
+            'tanggal_pinjam',
+            'tenggat',
+            'status',
+        ]);
+
+        // jika status dikembalikan, isi tanggal_kembali otomatis
+        if ($request->status === 'dikembalikan' && $peminjaman->tanggal_kembali === null) {
+            $data['tanggal_kembali'] = now();
+        }
+
+        $peminjaman->update($data);
 
         return redirect()->route('peminjaman.index')
             ->with('success','Data peminjaman berhasil diperbarui.');
