@@ -15,7 +15,22 @@
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <table class="table-auto w-full border-collapse border border-gray-300">
+                    <div class="mb-4 flex justify-left">
+                        <div class="relative w-1/3">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85
+                                            3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12
+                                            6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                </svg>
+                            </span>
+                            <input type="text" id="searchInput"
+                                placeholder="Cari peminjaman..."
+                                class="border pl-10 pr-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                    </div>
+                    <table id="peminjamanTable" class="table-auto w-full border-collapse border border-gray-300">
                         <thead class="bg-blue-400 dark:bg-gray-700 text-white">
                             <tr>
                                 <th class="border px-4 py-2">Nama Peminjam</th>
@@ -68,4 +83,16 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById("searchInput").addEventListener("keyup", function() {
+            let keyword = this.value.toLowerCase();
+            let rows = document.querySelectorAll("#peminjamanTable tbody tr");
+
+            rows.forEach(row => {
+                let text = row.textContent.toLowerCase();
+                row.style.display = text.includes(keyword) ? "" : "none";
+            });
+        });
+    </script>
 </x-app-layout>

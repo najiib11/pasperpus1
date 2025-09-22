@@ -1,12 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center space-x-4">
-            <a href="{{ route('siswa.index') }}" class="text-white hover:text-blue-400">
+            <a href="{{ route('siswa.index') }}" class="text-white hover:text-blue-700">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <h1 class="text-xl text-blue-700 dark:text-gray-300 font-semibold">Tambah Siswa</h1>
+            <h1 class="text-xl text-white dark:text-gray-300 font-semibold">Tambah Siswa</h1>
         </div>
     </x-slot>
 

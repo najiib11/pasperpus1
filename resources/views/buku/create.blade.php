@@ -1,17 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center space-x-4">
-            <a href="{{ route('buku.index') }}" class="text-black hover:text-blue-400">
+            <a href="{{ route('buku.index') }}" class="text-white hover:text-blue-700">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <h1 class="text-xl text-black dark:text-gray-300 font-semibold">Tambah Buku</h1>
+            <h1 class="text-xl text-white dark:text-gray-300 font-semibold">Tambah Buku</h1>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 

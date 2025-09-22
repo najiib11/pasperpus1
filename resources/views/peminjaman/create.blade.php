@@ -1,8 +1,19 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Tambah Peminjaman') }}
-        </h2>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('peminjaman.index') }}" class="text-white hover:text-blue-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+
+            <!-- Judul header -->
+            <h2 class="font-semibold text-xl text-white leading-tight">
+                {{ __('Tambah Peminjaman') }}
+            </h2>
+        </div>
     </x-slot>
 
     <div class="py-12">
