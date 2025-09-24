@@ -19,6 +19,19 @@
                         @csrf
 
                         <div class="mb-3">
+                            <label class="block font-medium text-sm text-gray-700">Kategori</label>
+                            <select name="kategori_id" class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach($kategoris as $kategori)
+                                    <option value="{{ $kategori->id }}" {{ old('kategori_id') == $kategori->id ? 'selected' : '' }}>
+                                        {{ $kategori->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('kategori_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Judul</label>
                             <input type="text" name="judul" value="{{ old('judul') }}"
                                 class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
@@ -51,6 +64,13 @@
                             <input type="number" name="jumlah_halaman" value="{{ old('jumlah_halaman') }}"
                                 class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
                             @error('jumlah_halaman') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="block font-medium text-sm text-gray-700">Stok</label>
+                            <input type="number" name="stok" value="{{ old('stok') }}"
+                                class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
+                            @error('stok') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="mb-3">

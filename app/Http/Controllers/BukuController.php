@@ -14,8 +14,8 @@ class BukuController extends Controller
      */
     public function index()
     {
-        $kategoris = Buku::with('kategori')->get();
-        return view('buku.index', ["kategoris" => $kategoris]);
+        $kategoris = Kategori::with('buku')->get(); // 'bukus' relasi hasMany di model Kategori
+            return view('buku.index', compact('kategoris'));
     }
 
     /**
@@ -62,5 +62,38 @@ class BukuController extends Controller
 
 
         return redirect()->route('buku.index')->with('failure', 'Buku Gagal ditambahkan!');
+    }
+
+    public function show($id)
+    {
+        $buku = Buku::with('kategori')->findOrFail($id);
+        return view('buku.show', compact('buku'));
+    }
+
+    /**
+ * Show the form for editing the specified resource.
+ */
+    public function edit($id)
+    {
+        $buku = Buku::findOrFail($id);
+        $kategoris = Kategori::all(); // untuk dropdown kategori
+        return view('buku.edit', compact('buku', 'kategoris'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'stok' => 'required|integer|min:0',
+        ]);
+
+        $buku = Buku::findOrFail($id);
+        $buku->stok = $request->input('stok');
+        $buku->save();
+
+        return redirect()->route('buku.show', $buku->id)
+            ->with('success', 'Stok buku berhasil diperbarui.');
     }
 }

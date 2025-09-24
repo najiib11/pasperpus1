@@ -7,13 +7,24 @@ use App\Models\Peminjaman;
 use App\Models\Buku;
 use Carbon\Carbon;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 class PeminjamanController extends Controller
 {
     public function index()
     {
-        $peminjamans = Peminjaman::with('buku','user')->get();
-        return view('peminjaman.index', compact('peminjamans'));
+        $peminjamans = Peminjaman::with(['user', 'buku'])->get();
+
+    // Grouping reservasi berdasarkan buku_id
+        $reservasiGrouped = $peminjamans
+            ->where('status', 'reservasi')
+            ->sortBy('created_at') // urut berdasarkan waktu isi form
+            ->groupBy('buku_id');
+
+        return view('peminjaman.index', [
+            'peminjamans' => $peminjamans,
+            'reservasiGrouped' => $reservasiGrouped,
+        ]);
     }
 
     public function create()
@@ -27,31 +38,39 @@ class PeminjamanController extends Controller
      * Simpan data peminjaman baru.
      */
     public function store(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'buku_id' => 'required|exists:buku,id',
+        'jumlah' => 'required|integer|min:1',
+    ]);
+
+    $buku = Buku::findOrFail($request->buku_id);
+    $jumlah = $request->jumlah;
+
+    // Cek apakah stok cukup
+    $status = $buku->stok >= $jumlah ? 'dipinjam' : 'reservasi';
+
+    if ($status === 'dipinjam') {
+        $buku->decrement('stok', $jumlah);
+    }
+
+    Peminjaman::create([
+        'user_id' => $request->user_id,
+        'buku_id' => $buku->id,
+        'jumlah' => $jumlah,
+        'tanggal_pinjam' => now(),
+        'tenggat' => now()->addDays(7),
+        'status' => $status,
+    ]);
+
+    return redirect()->route('peminjaman.index')
+        ->with('success', "Peminjaman berhasil ditambahkan dengan status: {$status}");
+}
+
+    public function show(Peminjaman $peminjaman)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'buku_id' => 'required|exists:buku,id',
-        ]);
-
-        $buku = Buku::findOrFail($request->buku_id);
-
-        // cek stok
-        $status = $buku->stok > 0 ? 'dipinjam' : 'reservasi';
-
-        if ($status === 'dipinjam') {
-            $buku->decrement('stok');
-        }
-
-        Peminjaman::create([
-            'user_id' => $request->user_id,
-            'buku_id' => $buku->id,
-            'tanggal_pinjam' => Carbon::now(),
-            'tenggat' => Carbon::now()->addDays(7),
-            'status' => $status,
-        ]);
-
-        return redirect()->route('peminjaman.index')
-            ->with('success', "Peminjaman berhasil ditambahkan dengan status: {$status}");
+        return view('peminjaman.edit', data: ['peminjaman' => $peminjaman->with("user")->get(), 'buku' => Buku::all()]);
     }
 
     /**
@@ -61,7 +80,7 @@ class PeminjamanController extends Controller
     {
         $buku = Buku::all();
         $users = User::all();
-        return view('peminjaman.edit', compact('peminjaman','buku','users'));
+        return view('peminjaman.edit', data: ['peminjaman' => $peminjaman, 'buku' => Buku::all()]);
     }
 
     /**
@@ -72,7 +91,8 @@ class PeminjamanController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'buku_id' => 'required|exists:buku,id',
-            'tanggal_pinjam' => 'required|date',
+            'jumlah' => 'required|integer|min:1',
+            'tanggal_pinjam' => 'nullable|date',
             'tenggat' => 'required|date',
             'status' => 'required|in:dipinjam,dikembalikan,reservasi',
         ]);
@@ -80,20 +100,26 @@ class PeminjamanController extends Controller
         $data = $request->only([
             'user_id',
             'buku_id',
+            'jumlah',
             'tanggal_pinjam',
             'tenggat',
             'status',
         ]);
 
-        // jika status dikembalikan, isi tanggal_kembali otomatis
+        // Jika status dikembalikan dan tanggal_kembali belum ada
         if ($request->status === 'dikembalikan' && $peminjaman->tanggal_kembali === null) {
             $data['tanggal_kembali'] = now();
+        }
+
+        // Jika status diubah ke "dipinjam" dan tanggal_pinjam kosong
+        if ($request->status === 'dipinjam' && empty($data['tanggal_pinjam'])) {
+            $data['tanggal_pinjam'] = now()->toDateString();
         }
 
         $peminjaman->update($data);
 
         return redirect()->route('peminjaman.index')
-            ->with('success','Data peminjaman berhasil diperbarui.');
+            ->with('success', 'Data peminjaman berhasil diperbarui.');
     }
 
     /**
@@ -129,5 +155,29 @@ class PeminjamanController extends Controller
 
         return redirect()->route('peminjaman.index')
             ->with('success', 'Buku berhasil dikembalikan!');
+    }
+
+    public function daftarReservasi($bukuId)
+    {
+        $reservasi = Peminjaman::where('buku_id', $bukuId)
+            ->where('status', 'reservasi')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return view('peminjaman.reservasi', compact('reservasi'));
+    }
+
+    // tambah ke antrian reservasi
+    public function reservasi(Request $request, $bukuId)
+    {
+        Peminjaman::create([
+            'user_id' => auth()->id(),
+            'buku_id' => $bukuId,
+            'tanggal_pinjam' => now(),
+            'tenggat' => now()->addDays(7),
+            'status' => 'reservasi'
+        ]);
+
+        return redirect()->back()->with('success', 'Reservasi berhasil ditambahkan ke antrian!');
     }
 }

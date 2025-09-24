@@ -40,5 +40,10 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/reservasi', [\App\Http\Controllers\ReservasiController::class, 'index'])->name('reservasi.index');
+});
+
+
 
 require __DIR__.'/auth.php';

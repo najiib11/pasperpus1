@@ -25,15 +25,14 @@
                         Lihat semua >
                     </a>
                 </div>
-
                 <!-- Card slider -->
                 <div class="flex space-x-4 overflow-x-auto pb-4">
-                    @forelse($kategoris as $buku)
+                    @forelse($kategori->buku as $buku)
                         <div class="w-48 flex-shrink-0 bg-white shadow rounded-lg overflow-hidden">
                             @if($buku->gambar)
-                                <img src="{{ asset('storage/buku/'.$buku->gambar) }}"
-                                     alt="{{ $buku->judul }}"
-                                     class="h-56 w-full object-cover">
+                                <img src="{{ asset('storage/' . $buku->gambar) }}"
+                                    alt="{{ $buku->judul }}"
+                                    class="h-56 w-full object-cover">
                             @else
                                 <div class="h-56 w-full bg-gray-200 flex items-center justify-center">
                                     <span class="text-gray-500 text-sm">No Image</span>
@@ -42,7 +41,7 @@
                             <div class="p-3 text-center">
                                 <h4 class="font-semibold text-sm truncate">{{ $buku->judul }}</h4>
                                 <a href="{{ route('buku.show', $buku->id) }}"
-                                   class="mt-2 inline-block bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700">
+                                class="mt-2 inline-block bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700">
                                     Detail Buku
                                 </a>
                             </div>
