@@ -7,7 +7,9 @@ use App\Models\Peminjaman;
 use App\Models\Buku;
 use Carbon\Carbon;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use phpDocumentor\Reflection\PseudoTypes\True_;
 
 class PeminjamanController extends Controller
 {
@@ -31,6 +33,7 @@ class PeminjamanController extends Controller
     {
         $buku = Buku::all();
         $users = User::all();
+        dd(Auth::user()->id_role);
         return view('peminjaman.create', compact('buku','users'));
     }
 
@@ -64,8 +67,14 @@ class PeminjamanController extends Controller
         'status' => $status,
     ]);
 
-    return redirect()->route('peminjaman.index')
-        ->with('success', "Peminjaman berhasil ditambahkan dengan status: {$status}");
+
+    if(in_array(Auth::user()->id_role, [1, 2])){
+         return redirect()->route('peminjaman.index')->with('success', value: "Peminjaman berhasil ditambahkan dengan status: {$status}");
+    }
+    else{
+        return redirect()->route('buku.index')
+        ->with('success', 'Buku berhasil di pinjam!');
+    }
 }
 
     public function show(Peminjaman $peminjaman)
@@ -177,7 +186,11 @@ class PeminjamanController extends Controller
             'tenggat' => now()->addDays(7),
             'status' => 'reservasi'
         ]);
-
-        return redirect()->back()->with('success', 'Reservasi berhasil ditambahkan ke antrian!');
+        if(in_array(Auth::user()->id_role, [1, 2])){
+            return redirect()->route('peminjaman.index')->with('success', 'Reservasi berhasil ditambahkan ke antrian!');
+        }
+        else{
+            return redirect()->route('buku.index')->with('success', 'Reservasi berhasil ditambahkan ke antrian!');
+        }
     }
 }

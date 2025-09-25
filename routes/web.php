@@ -21,7 +21,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::resource('buku', BukuController::class);
+Route::middleware(['auth'])->group(function (){
+    Route::resource('buku', BukuController::class);
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('peminjaman', PeminjamanController::class);
@@ -29,9 +31,11 @@ Route::middleware(['auth'])->group(function () {
         ->name('peminjaman.kembalikan');
 });
 
-Route::resource('kategori', KategoriController::class);
+Route::middleware(['auth', 'role:pustakawan'])->group(function (){
+    Route::resource('kategori', KategoriController::class);
+});
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role:pustakawan'])->group(function () {
     Route::resource('siswa', SiswaController::class);
 
     // Route tambahan untuk cetak
@@ -42,6 +46,8 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/reservasi', [\App\Http\Controllers\ReservasiController::class, 'index'])->name('reservasi.index');
+    Route::post('/reservasi/konfirmasi/{bukuId}', [PeminjamanController::class, 'reservasi'])
+        ->name('reservasi.konfirmasi');
 });
 
 

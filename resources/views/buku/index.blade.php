@@ -5,10 +5,14 @@
                 {{ __('Daftar Buku') }}
             </h2>
             <!-- Tombol Tambah Buku -->
-            <a href="{{ route('buku.create') }}"
+            @if(in_array(Auth::user()->id_role, [1, 2]))
+            {{-- jika pengguna admin dan pustakawan --}}
+                <a href="{{ route('buku.create') }}"
                class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm">
                 + Tambah Buku
-            </a>
+                </a>
+            @endif
+
         </div>
     </x-slot>
 

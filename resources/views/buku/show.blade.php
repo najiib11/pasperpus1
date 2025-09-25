@@ -37,11 +37,28 @@
                     <p><strong>Stok:</strong> {{ $buku->stok ?? '-' }}</p>
                     <p><strong>Sumber Pengadaan:</strong> {{ ucfirst($buku->sumber_pengadaan) }}</p>
 
-                    <div class="mt-6">
+                    <div class="mt-6 {{in_array(Auth::user()->id_role, [1, 2]) ? '' : 'hidden'}}">
                         <a href="{{ route('buku.edit', $buku->id) }}"
                            class="inline-block bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
                             Edit Stok Buku
                         </a>
+                    </div>
+                    <div class="mt-6">
+                        <form action="{{route('peminjaman.store')}}" method="POST" class="{{in_array(Auth::user()->id_role, [1, 2]) ? 'hidden' : ''}}" method="POST">
+                            @csrf
+                            @method('POST')
+                            <input type="text" name="user_id" id="user_id" value="{{Auth::user()->id}}" hidden>
+                            <input type="text" name="buku_id" id="buku_id" value="{{$buku->id}}" hidden>
+                            <input type="text" name="jumlah" id="jumlah" value="1" hidden>
+                            <input type="submit" value="Pinjam Buku" class="{{$buku->stok < 1 ? 'hidden' : ''}} inline-block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"  value="Pinjam Buku">
+
+                        </form>
+
+                        {{-- jika jumlah buku habis --}}
+                        <form action="{{route('reservasi.konfirmasi', $buku->id)}}" method="POST">
+                            @csrf
+                            <input type="submit" value="Reservasi Buku" class="{{$buku->stok > 0 ? 'hidden' : ''}} inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"  value="Reservasi Buku">
+                        </form>
                     </div>
                 </div>
             </div>
