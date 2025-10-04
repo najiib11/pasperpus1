@@ -21,12 +21,14 @@
                         @csrf
                         @method('PUT')
 
+                        {{-- Kategori --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Kategori</label>
                             <select name="kategori_id" class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($kategoris as $kategori)
-                                    <option value="{{ $kategori->id }}" {{ $buku->kategori_id == $kategori->id ? 'selected' : '' }}>
+                                    <option value="{{ $kategori->id }}"
+                                        {{ old('kategori_id', $buku->kategori_id) == $kategori->id ? 'selected' : '' }}>
                                         {{ $kategori->nama }}
                                     </option>
                                 @endforeach
@@ -34,6 +36,7 @@
                             @error('kategori_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Judul --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Judul</label>
                             <input type="text" name="judul" value="{{ old('judul', $buku->judul) }}"
@@ -41,6 +44,7 @@
                             @error('judul') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Penulis --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Penulis</label>
                             <input type="text" name="penulis" value="{{ old('penulis', $buku->penulis) }}"
@@ -48,6 +52,7 @@
                             @error('penulis') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Penerbit --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Penerbit</label>
                             <input type="text" name="penerbit" value="{{ old('penerbit', $buku->penerbit) }}"
@@ -55,6 +60,7 @@
                             @error('penerbit') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Tahun Terbit --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Tahun Terbit</label>
                             <input type="number" name="tahun_terbit" value="{{ old('tahun_terbit', $buku->tahun_terbit) }}"
@@ -62,6 +68,7 @@
                             @error('tahun_terbit') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Jumlah Halaman --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Jumlah Halaman</label>
                             <input type="number" name="jumlah_halaman" value="{{ old('jumlah_halaman', $buku->jumlah_halaman) }}"
@@ -69,6 +76,7 @@
                             @error('jumlah_halaman') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Stok --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Stok</label>
                             <input type="number" name="stok" value="{{ old('stok', $buku->stok) }}"
@@ -76,18 +84,18 @@
                             @error('stok') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Sumber Pengadaan --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Sumber Pengadaan</label>
-                            <select name="sumber_pengadaan"
-                                class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
+                            <select name="sumber_pengadaan" class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
                                 <option value="">-- Pilih Sumber --</option>
-                                <option value="hibah" {{ $buku->sumber_pengadaan == 'hibah' ? 'selected' : '' }}>Hibah</option>
-                                <option value="pemerintah" {{ $buku->sumber_pengadaan == 'pemerintah' ? 'selected' : '' }}>Pemerintah</option>
+                                <option value="hibah" {{ old('sumber_pengadaan', $buku->sumber_pengadaan) == 'hibah' ? 'selected' : '' }}>Hibah</option>
+                                <option value="pemerintah" {{ old('sumber_pengadaan', $buku->sumber_pengadaan) == 'pemerintah' ? 'selected' : '' }}>Pemerintah</option>
                             </select>
                             @error('sumber_pengadaan') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
-                        {{-- Preview Gambar --}}
+                        {{-- Gambar --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Gambar Buku</label>
                             <input type="file" name="gambar" id="gambar" class="form-control w-full border-gray-300 rounded-md shadow-sm">

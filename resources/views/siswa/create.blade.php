@@ -2,8 +2,10 @@
     <x-slot name="header">
         <div class="flex items-center space-x-4">
             <a href="{{ route('siswa.index') }}" class="text-white hover:text-blue-700">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
             <h1 class="text-xl text-white dark:text-gray-300 font-semibold">Tambah Siswa</h1>
@@ -35,14 +37,14 @@
                     {{-- Jurusan --}}
                     <div>
                         <label class="block font-medium">Jurusan</label>
-                        <select name="jurusan" class="w-full border rounded px-3 py-2">
+                        <select name="jurusan" class="w-full border rounded px-3 py-2 @error('jurusan') border-red-500 @enderror">
                             <option value="">-- Pilih Jurusan --</option>
-                            <option value="Akuntansi">Akuntansi</option>
-                            <option value="Perkantoran">Perkantoran</option>
-                            <option value="Pemasaran">Pemasaran</option>
-                            <option value="Otomotif">Otomotif</option>
-                            <option value="Elektronika">Elektronika</option>
-                            <option value="Komputer Jaringan">Komputer Jaringan</option>
+                            <option value="Akuntansi" {{ old('jurusan') == 'Akuntansi' ? 'selected' : '' }}>Akuntansi</option>
+                            <option value="Perkantoran" {{ old('jurusan') == 'Perkantoran' ? 'selected' : '' }}>Perkantoran</option>
+                            <option value="Pemasaran" {{ old('jurusan') == 'Pemasaran' ? 'selected' : '' }}>Pemasaran</option>
+                            <option value="Otomotif" {{ old('jurusan') == 'Otomotif' ? 'selected' : '' }}>Otomotif</option>
+                            <option value="Elektronika" {{ old('jurusan') == 'Elektronika' ? 'selected' : '' }}>Elektronika</option>
+                            <option value="Komputer Jaringan" {{ old('jurusan') == 'Komputer Jaringan' ? 'selected' : '' }}>Komputer Jaringan</option>
                         </select>
                         @error('jurusan') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
@@ -60,16 +62,17 @@
                     <div>
                         <label class="block font-medium">Alamat</label>
                         <textarea name="alamat" rows="2"
-                                  class="w-full border rounded px-3 py-2">{{ old('alamat') }}</textarea>
+                                  class="w-full border rounded px-3 py-2 @error('alamat') border-red-500 @enderror">{{ old('alamat') }}</textarea>
+                        @error('alamat') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Jenis Kelamin --}}
                     <div>
                         <label class="block font-medium">Jenis Kelamin</label>
-                        <select name="jenis_kelamin" class="w-full border rounded px-3 py-2">
+                        <select name="jenis_kelamin" class="w-full border rounded px-3 py-2 @error('jenis_kelamin') border-red-500 @enderror">
                             <option value="">-- Pilih --</option>
-                            <option value="Laki-laki">Laki-laki</option>
-                            <option value="Perempuan">Perempuan</option>
+                            <option value="Laki-laki" {{ old('jenis_kelamin') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="Perempuan" {{ old('jenis_kelamin') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
                         </select>
                         @error('jenis_kelamin') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
@@ -86,7 +89,8 @@
                     <div>
                         <label class="block font-medium">Nomor Telepon</label>
                         <input type="text" name="telepon" value="{{ old('telepon') }}"
-                               class="w-full border rounded px-3 py-2">
+                               class="w-full border rounded px-3 py-2 @error('telepon') border-red-500 @enderror">
+                        @error('telepon') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Tempat & Tanggal Lahir --}}

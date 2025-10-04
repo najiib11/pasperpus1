@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Intervention\Image\Facades\Image;
 
 class SiswaController extends Controller
@@ -31,14 +33,25 @@ class SiswaController extends Controller
             'jurusan' => 'required',
             'kelas' => 'required',
             'jenis_kelamin' => 'required',
-            'email' => 'required|email|unique:siswa',
+            'email' => 'required|email|unique:siswa|unique:users,email',
             'tanggal_lahir' => 'required|date',
             'tempat_lahir' => 'required',
         ]);
 
-        Siswa::create($request->all());
+        // Simpan ke tabel siswa
+        $siswa = Siswa::create($request->all());
 
-        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil ditambahkan');
+        // Buat akun user untuk siswa tersebut
+        $user = User::create([
+            'name' => $request->nama,
+            'email' => $request->email,
+            'password' => Hash::make('password123'), // bisa diset password = NISN
+        ]);
+
+        // Beri role 'anggota'
+        $user->assignRole('anggota');
+
+        return redirect()->route('siswa.index')->with('success', 'Data siswa dan akun pengguna berhasil ditambahkan.');
     }
 
     public function show(Siswa $siswa)
@@ -53,21 +66,48 @@ class SiswaController extends Controller
 
     public function update(Request $request, Siswa $siswa)
     {
+        // Validasi input
         $request->validate([
-            'nisn' => 'required|unique:siswa,nisn,'.$siswa->id,
-            'email' => 'required|email|unique:siswa,email,'.$siswa->id,
+            'nisn' => 'required|unique:siswa,nisn,' . $siswa->id,
+            'email' => 'required|email|unique:siswa,email,' . $siswa->id,
+            'nama' => 'required|string|max:255',
+            'jurusan' => 'nullable|string|max:255',
+            'kelas' => 'nullable|string|max:255',
+            'jenis_kelamin' => 'nullable|string|max:20',
         ]);
 
+        // Update data siswa
         $siswa->update($request->all());
 
-        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diperbarui');
+        // Update juga data user (jika ada user dengan email yang sama)
+        $user = \App\Models\User::where('email', $siswa->email)->first();
+
+        if ($user) {
+            // Update data user agar sinkron dengan data siswa
+            $user->update([
+                'name' => $request->nama,
+                'email' => $request->email,
+            ]);
+        }
+
+        return redirect()->route('siswa.index')->with('success', 'Data siswa dan user berhasil diperbarui.');
     }
+
 
     public function destroy(Siswa $siswa)
     {
+        // Hapus user yang memiliki email sama dengan siswa ini
+        $user = \App\Models\User::where('email', $siswa->email)->first();
+        if ($user) {
+            $user->delete();
+        }
+
+        // Hapus data siswa
         $siswa->delete();
-        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil dihapus');
+
+        return redirect()->route('siswa.index')->with('success', 'Data siswa dan akun pengguna berhasil dihapus');
     }
+
 
    public function cetak(Siswa $siswa)
     {

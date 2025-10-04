@@ -43,6 +43,7 @@
                         <div>
                             <label class="block font-semibold">Jurusan</label>
                             <select name="jurusan" class="w-full border rounded px-3 py-2">
+                                <option value="">-- Pilih Jurusan --</option>
                                 @php
                                     $jurusanList = ['Akuntansi', 'Perkantoran', 'Pemasaran', 'Otomotif', 'Elektronika', 'Komputer Jaringan'];
                                 @endphp
@@ -52,6 +53,7 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('jurusan') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- Kelas -->
@@ -59,15 +61,18 @@
                             <label class="block font-semibold">Kelas</label>
                             <input type="text" name="kelas" value="{{ old('kelas', $siswa->kelas) }}"
                                    class="w-full border rounded px-3 py-2">
+                            @error('kelas') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- Jenis Kelamin -->
                         <div>
                             <label class="block font-semibold">Jenis Kelamin</label>
                             <select name="jenis_kelamin" class="w-full border rounded px-3 py-2">
+                                <option value="">-- Pilih Jenis Kelamin --</option>
                                 <option value="Laki-laki" {{ old('jenis_kelamin', $siswa->jenis_kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
                                 <option value="Perempuan" {{ old('jenis_kelamin', $siswa->jenis_kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
                             </select>
+                            @error('jenis_kelamin') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- Tempat Lahir -->
@@ -75,6 +80,7 @@
                             <label class="block font-semibold">Tempat Lahir</label>
                             <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $siswa->tempat_lahir) }}"
                                    class="w-full border rounded px-3 py-2">
+                            @error('tempat_lahir') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- Tanggal Lahir -->
@@ -82,6 +88,7 @@
                             <label class="block font-semibold">Tanggal Lahir</label>
                             <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $siswa->tanggal_lahir) }}"
                                    class="w-full border rounded px-3 py-2">
+                            @error('tanggal_lahir') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- Email -->
@@ -97,6 +104,7 @@
                             <label class="block font-semibold">Nomor Telepon</label>
                             <input type="text" name="telepon" value="{{ old('telepon', $siswa->telepon) }}"
                                    class="w-full border rounded px-3 py-2">
+                            @error('telepon') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
@@ -104,6 +112,7 @@
                     <div class="mt-4">
                         <label class="block font-semibold">Alamat</label>
                         <textarea name="alamat" rows="3" class="w-full border rounded px-3 py-2">{{ old('alamat', $siswa->alamat) }}</textarea>
+                        @error('alamat') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="mt-6 flex gap-3">
