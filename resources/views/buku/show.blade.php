@@ -50,8 +50,9 @@
         <input type="text" name="user_id" value="{{Auth::user()->id}}" hidden>
         <input type="text" name="buku_id" value="{{$buku->id}}" hidden>
         <input type="text" name="jumlah" value="1" hidden>
-        <input type="submit" value="Pinjam Buku"
-               class="{{$buku->stok < 1 ? 'hidden' : ''}} inline-block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        @if(!Auth::user()->hasRole('pustakawan'))
+            <input type="submit" value="Pinjam Buku" class="{{$buku->stok < 1 ? 'hidden' : ''}} inline-block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 cursor-pointer">
+        @endif
     </form>
 
     {{-- Form Reservasi --}}
