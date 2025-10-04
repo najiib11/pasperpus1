@@ -26,6 +26,7 @@
                 <!-- Isi kartu -->
                 <div class="p-6">
                     <div class="flex items-center gap-4">
+                        <!-- Foto profil default -->
                         <div class="w-24 h-24 bg-gray-200 flex items-center justify-center rounded">
                             <span class="text-gray-500 text-xs">Foto</span>
                         </div>
@@ -37,21 +38,28 @@
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <p class="text-sm mb-2"><strong>Jenis Kelamin :</strong> {{ $siswa->jenis_kelamin }}</p>
-                        <p class="text-sm mb-2"><strong>Email :</strong> {{ $siswa->email }}</p>
-                        <p class="text-sm mb-2"><strong>Telepon :</strong> {{ $siswa->telepon }}</p>
-                        <p class="text-sm mb-2"><strong>TTL :</strong> {{ $siswa->tempat_lahir }}, {{ $siswa->tanggal_lahir }}</p>
-                        <p class="text-sm mb-2"><strong>Alamat :</strong> {{ $siswa->alamat }}</p>
+                    <div class="flex flex-row items-center justify-between">
+                        <div class="mt-4 w-[50%]">
+                            <p class="text-sm mb-2"><strong>Jenis Kelamin :</strong> {{ $siswa->jenis_kelamin }}</p>
+                            <p class="text-sm mb-2"><strong>Email :</strong> {{ $siswa->email }}</p>
+                            <p class="text-sm mb-2"><strong>Telepon :</strong> {{ $siswa->telepon }}</p>
+                            <p class="text-sm mb-2"><strong>TTL :</strong> {{ $siswa->tempat_lahir }}, {{ $siswa->tanggal_lahir }}</p>
+                            <p class="text-sm mb-2"><strong>Alamat :</strong> {{ $siswa->alamat }}</p>
+                        </div>
+                        <div class="barcode text-center">
+                            {!! $qrCodeSvg !!}
+                            <p style="font-size:10px;">{{ $siswa->nisn }}</p>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Footer kartu -->
                 <div class="bg-gray-100 p-3 text-center">
                     <p class="text-xs text-gray-600">Kartu ini sah tanpa tanda tangan</p>
                 </div>
             </div>
 
-            {{-- Tombol aksi hanya muncul di browser --}}
+            {{-- Tombol aksi hanya muncul di browser, tidak ikut ke PDF --}}
             @if(!app()->runningInConsole() && !request()->routeIs('siswa.cetak'))
                 <div class="mt-6 flex justify-center gap-3">
                     <a href="{{ route('siswa.edit', $siswa->id) }}"
@@ -59,15 +67,14 @@
                         Edit Data
                     </a>
                     <a href="{{ route('siswa.cetak', $siswa->id) }}"
-                       class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                        Cetak Kartu
+                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Cetak Kartu
                     </a>
-
-                    <!-- Form hapus -->
-                    <form id="deleteForm" action="{{ route('siswa.destroy', $siswa->id) }}" method="POST">
+                    <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST"
+                          onsubmit="return confirm('Apakah yakin ingin menghapus data ini?')">
                         @csrf
                         @method('DELETE')
-                        <button type="button" id="deleteBtn"
+                        <button type="submit"
                                 class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
                             Hapus
                         </button>
@@ -76,23 +83,4 @@
             @endif
         </div>
     </div>
-
-    <script>
-        document.getElementById('deleteBtn').addEventListener('click', function(e) {
-            Swal.fire({
-                title: 'Apakah kamu yakin?',
-                text: "Data siswa ini akan dihapus permanen.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('deleteForm').submit();
-                }
-            });
-        });
-    </script>
 </x-app-layout>

@@ -22,5 +22,6 @@ class Siswa extends Model
         'telepon',
         'tanggal_lahir',
         'tempat_lahir',
+        'user_id'
     ];
 }

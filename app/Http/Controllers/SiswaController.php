@@ -8,6 +8,12 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Intervention\Image\Facades\Image;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Writer;
+
 
 class SiswaController extends Controller
 {
@@ -56,7 +62,21 @@ class SiswaController extends Controller
 
     public function show(Siswa $siswa)
     {
-        return view('siswa.show', compact('siswa'));
+        // URL tujuan ketika QR code discan
+        $url = route('siswa.cetak', ['siswa' => $siswa->id]);
+
+        // Gunakan SVG backend agar tidak perlu Imagick
+        $renderer = new ImageRenderer(
+            new RendererStyle(200),
+            new SvgImageBackEnd()
+        );
+
+        $writer = new Writer($renderer);
+
+        // Generate QR code berisi URL
+        $qrCodeSvg = $writer->writeString($url);
+
+        return view('siswa.show', compact('siswa', 'qrCodeSvg'));
     }
 
     public function edit(Siswa $siswa)
@@ -109,10 +129,14 @@ class SiswaController extends Controller
     }
 
 
-   public function cetak(Siswa $siswa)
+    public function cetak(Siswa $siswa)
     {
-        $pdf = Pdf::loadView('siswa.kartu', data: compact('siswa'))
-                ->setPaper([0, 0, 297.64, 419.53], 'landscape'); // A6 landscape
+        $pdf = Pdf::loadView('siswa.kartu', compact('siswa'))
+            ->setPaper([0, 0, 297.64, 419.53], 'landscape') // ukuran A6 landscape
+            ->setOption('margin-top', 0)
+            ->setOption('margin-bottom', 0)
+            ->setOption('margin-left', 0)
+            ->setOption('margin-right', 0);
 
         return $pdf->download('kartu-anggota-' . $siswa->nama . '.pdf');
     }
@@ -134,4 +158,15 @@ class SiswaController extends Controller
 
     //     return $img->response('png'); // tampilkan langsung sebagai PNG
     // }
+    public function kartuPdf($id)
+    {
+        $siswa = Siswa::findOrFail($id);
+
+        // Generate QR code untuk NISN atau ID Siswa
+        $qrCode = base64_encode(QrCode::format('png')->size(100)->generate($siswa->nisn));
+
+        $pdf = Pdf::loadView('siswa.kartu_pdf', compact('siswa', 'qrCode'));
+
+        return $pdf->download('kartu_'.$siswa->nisn.'.pdf');
+    }
 }

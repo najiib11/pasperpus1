@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use DB;
-use Illuminate\Http\Request;
 use App\Models\Buku;
+use App\Models\Siswa;
 use App\Models\Kategori;
 
+use Illuminate\Http\Request;
 use App\Helpers\WhatsAppHelper;
-use App\Models\Siswa;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log; // ✅ tambahkan ini
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log; // ✅ tambahkan ini
 
 class BukuController extends Controller
 {
@@ -76,7 +77,27 @@ class BukuController extends Controller
     public function show($id)
     {
         $buku = Buku::with('kategori')->findOrFail($id);
-        return view('buku.show', compact('buku'));
+
+        $user = Auth::user();
+        $roles = $user->getRoleNames(); // Hasilnya berupa koleksi (collection)
+        $pesan = '';
+
+        // Cek jika user memiliki role 'anggota' (atau 'user')
+        if ($user && $user->getRoleNames('anggota')) {
+            $sudahPinjam = \App\Models\Peminjaman::where('user_id', $user->id)
+                ->where('buku_id', $buku->id)
+                ->whereIn('status', ['dipinjam', 'reservasi']) // cek dua status sekaligus
+                ->exists();
+
+            if ($sudahPinjam) {
+                $pesan = 'Siswa hanya boleh meminjam satu buku per setiap buku.';
+            }
+        }
+
+        // dd($id);
+        // dd($pesan);
+
+        return view('buku.show', compact('buku', 'pesan'));
     }
 
     /**
