@@ -14,23 +14,6 @@
     <div class="py-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white shadow rounded-lg p-6">
 
-            {{-- ✅ ALERT SUCCESS --}}
-            @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <strong class="font-bold">Berhasil!</strong>
-                    <span class="block sm:inline">{{ session('success') }}</span>
-                </div>
-            @endif
-
-            {{-- ⚠️ ALERT ERROR --}}
-            @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <strong class="font-bold">Gagal!</strong>
-                    <span class="block sm:inline">{{ session('error') }}</span>
-                </div>
-            @endif
-
-            {{-- ⚠️ ALERT VALIDASI ERROR (opsional) --}}
             @if ($errors->any())
                 <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded relative mb-4" role="alert">
                     <strong class="font-bold">Perhatian!</strong>
@@ -85,12 +68,11 @@
                                     </a>
 
                                     <!-- Tombol Hapus -->
-                                    <form action="{{ route('kategori.destroy', $kategori->id) }}" method="POST" class="inline">
+                                    <form action="{{ route('kategori.destroy', $kategori->id) }}" method="POST" class="delete-form inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit"
-                                            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center gap-1"
-                                            onclick="return confirm('Hapus kategori ini?')">
+                                        <button type="button"
+                                            class="delete-btn bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center gap-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                  fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                                                 <path d="M5.5 5.5A.5.5 0 0 1 6
@@ -123,4 +105,32 @@
             </table>
         </div>
     </div>
+
+    {{-- ✅ Tambahkan SweetAlert2 CDN --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.querySelectorAll('.delete-btn').forEach((button) => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const form = this.closest('.delete-form');
+
+                Swal.fire({
+                    title: 'Yakin ingin menghapus?',
+                    text: "Data kategori ini akan dihapus secara permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+    </script>
 </x-app-layout>
