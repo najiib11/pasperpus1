@@ -31,14 +31,17 @@
                     <x-nav-link :href="route('siswa.index')" :active="request()->routeIs('siswa.*')">
                         {{ __('Data Siswa') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('guru.index')" :active="request()->routeIs('guru.*')">
+                        {{ __('Data Guru') }}
+                    </x-nav-link>
                     @endif
 
+                    @if(!Auth::user()->hasRole('pustakawan'))
+                    <x-nav-link :href="route('peminjaman.tampil')" :active="request()->routeIs('peminjaman.*')">
+                        {{ __('Riwayat Peminjaman') }}
+                    </x-nav-link>
+                    @endif
 
-                    @if(Auth::user()->hasRole('anggota'))
-            <x-nav-link :href="route('peminjaman.tampil')" :active="request()->routeIs('peminjaman.*')">
-                {{ __('Peminjaman Buku') }}
-            </x-nav-link>
-            @endif
                 </div>
             </div>
 

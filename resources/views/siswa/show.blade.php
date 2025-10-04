@@ -38,12 +38,18 @@
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <p class="text-sm mb-2"><strong>Jenis Kelamin :</strong> {{ $siswa->jenis_kelamin }}</p>
-                        <p class="text-sm mb-2"><strong>Email :</strong> {{ $siswa->email }}</p>
-                        <p class="text-sm mb-2"><strong>Telepon :</strong> {{ $siswa->telepon }}</p>
-                        <p class="text-sm mb-2"><strong>TTL :</strong> {{ $siswa->tempat_lahir }}, {{ $siswa->tanggal_lahir }}</p>
-                        <p class="text-sm mb-2"><strong>Alamat :</strong> {{ $siswa->alamat }}</p>
+                    <div class="flex flex-row items-center justify-between">
+                        <div class="mt-4 w-[50%]">
+                            <p class="text-sm mb-2"><strong>Jenis Kelamin :</strong> {{ $siswa->jenis_kelamin }}</p>
+                            <p class="text-sm mb-2"><strong>Email :</strong> {{ $siswa->email }}</p>
+                            <p class="text-sm mb-2"><strong>Telepon :</strong> {{ $siswa->telepon }}</p>
+                            <p class="text-sm mb-2"><strong>TTL :</strong> {{ $siswa->tempat_lahir }}, {{ $siswa->tanggal_lahir }}</p>
+                            <p class="text-sm mb-2"><strong>Alamat :</strong> {{ $siswa->alamat }}</p>
+                        </div>
+                        <div class="barcode text-center">
+                            {!! $qrCodeSvg !!}
+                            <p style="font-size:10px;">{{ $siswa->nisn }}</p>
+                        </div>
                     </div>
                 </div>
 

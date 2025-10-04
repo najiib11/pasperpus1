@@ -1,17 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-blue-700 leading-tight">
+        <h2 class="font-semibold text-xl text-white leading-tight">
             {{ __('Daftar Peminjaman Buku') }}
         </h2>
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Alert -->
-        @if (session('success'))
+        {{-- @if (session('success'))
             <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                 {{ session('success') }}
             </div>
-        @endif
+        @endif --}}
 
         <!-- Tabel -->
         <div class="bg-white shadow-md rounded-xl overflow-hidden">

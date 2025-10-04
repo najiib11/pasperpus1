@@ -13,6 +13,9 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- ✅ SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -32,5 +35,29 @@
                 {{ $slot }}
             </main>
         </div>
+
+        {{-- ✅ SweetAlert Auto Trigger untuk session flash --}}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                @if (session('success'))
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: "{{ session('success') }}",
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                @endif
+
+                @if (session('error'))
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: "{{ session('error') }}",
+                        showConfirmButton: true
+                    });
+                @endif
+            });
+        </script>
     </body>
 </html>

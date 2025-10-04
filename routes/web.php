@@ -7,7 +7,8 @@ use App\Http\Controllers\{
     PeminjamanController,
     KategoriController,
     SiswaController,
-    ReservasiController
+    ReservasiController,
+    GuruController
 };
 
 /*
@@ -19,7 +20,9 @@ use App\Http\Controllers\{
 // ===========================
 // HALAMAN UTAMA & DASHBOARD
 // ===========================
-Route::get('/', fn () => view('welcome'));
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
 Route::get('/dashboard', fn () => view('dashboard'))
     ->middleware(['auth', 'verified'])
@@ -58,7 +61,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.anggota');
 
-  Route::get('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.kembalikan');
+    Route::get('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.kembalikan');
 
 
     /*
@@ -88,8 +91,11 @@ Route::middleware(['auth', 'role:pustakawan'])->group(function () {
     |------------------------------
     */
     Route::resource('siswa', SiswaController::class);
-    Route::get('siswa/{siswa}/cetak', [SiswaController::class, 'cetak'])->name('siswa.cetak');
+    Route::resource('guru', GuruController::class);
 });
+Route::get('siswa/{siswa}/cetak', [SiswaController::class, 'cetak'])->name('siswa.cetak');
+
+
 
 // ===========================
 // AUTH (LOGIN, REGISTER, DLL.)

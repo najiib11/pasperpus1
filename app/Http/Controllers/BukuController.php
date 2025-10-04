@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use DB;
-use Illuminate\Http\Request;
 use App\Models\Buku;
+use App\Models\Siswa;
 use App\Models\Kategori;
 
+use Illuminate\Http\Request;
 use App\Helpers\WhatsAppHelper;
-use App\Models\Siswa;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log; // ✅ tambahkan ini
 
 class BukuController extends Controller
 {
@@ -74,7 +77,27 @@ class BukuController extends Controller
     public function show($id)
     {
         $buku = Buku::with('kategori')->findOrFail($id);
-        return view('buku.show', compact('buku'));
+
+        $user = Auth::user();
+        $roles = $user->getRoleNames(); // Hasilnya berupa koleksi (collection)
+        $pesan = '';
+
+        // Cek jika user memiliki role 'anggota' (atau 'user')
+        if ($user && $user->getRoleNames('anggota')) {
+            $sudahPinjam = \App\Models\Peminjaman::where('user_id', $user->id)
+                ->where('buku_id', $buku->id)
+                ->whereIn('status', ['dipinjam', 'reservasi']) // cek dua status sekaligus
+                ->exists();
+
+            if ($sudahPinjam) {
+                $pesan = 'Siswa hanya boleh meminjam satu buku per setiap buku.';
+            }
+        }
+
+        // dd($id);
+        // dd($pesan);
+
+        return view('buku.show', compact('buku', 'pesan'));
     }
 
     /**
@@ -90,44 +113,55 @@ class BukuController extends Controller
     /**
      * Update buku (stok dan info lain).
      */
- public function update(Request $request, $id)
-{
-    $request->validate([
-        'judul'           => 'nullable',
-        'penulis'         => 'nullable',
-        'penerbit'        => 'nullable',
-        'tahun_terbit'    => 'nullable|digits:4|integer',
-        'jumlah_halaman'  => 'nullable|integer',
-        'sumber_pengadaan'=> 'nullable|in:hibah,pemerintah',
-        'kategori_id'     => ' nullable|exists:kategoris,id',
-        'stok'            => 'nullable|integer|min:0',
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'judul'            => 'nullable|string|max:255',
+            'penulis'          => 'nullable|string|max:255',
+            'penerbit'         => 'nullable|string|max:255',
+            'tahun_terbit'     => 'nullable|digits:4|integer',
+            'jumlah_halaman'   => 'nullable|integer|min:1',
+            'sumber_pengadaan' => 'nullable|in:hibah,pemerintah',
+            'kategori_id'      => 'nullable|exists:kategoris,id',
+            'stok'             => 'nullable|integer|min:0',
+            'gambar'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-    ]);
+        $buku = Buku::findOrFail($id);
 
-    $buku = Buku::findOrFail($id);
+        // Handle upload gambar baru
+        if ($request->hasFile('gambar')) {
+            // Hapus gambar lama jika ada
+            if ($buku->gambar && Storage::disk('public')->exists($buku->gambar)) {
+                Storage::disk('public')->delete($buku->gambar);
+            }
 
-    $data = $request->all();
+            // Simpan gambar baru
+            $validated['gambar'] = $request->file('gambar')->store('buku', 'public');
+        }
 
-    if ($request->hasFile('gambar')) {
-        $file = $request->file('gambar');
-        $path = $file->store('buku', 'public');
-        $data['gambar'] = $path;
+        // Update data buku
+        $buku->update($validated);
+
+        // Kirim notifikasi WhatsApp jika stok > 0
+        if ($buku->stok > 0) {
+            try {
+                Http::withHeaders([
+                    'Authorization' => 'JMyhDU5DNLsdRZq4hBxj', // API Key Fonnte
+                ])->post('https://api.fonnte.com/send', [
+                    'target'  => '6287793183539',
+                    'message' => "📚 Halo, buku *{$buku->judul}* sekarang sudah tersedia di perpustakaan. Silakan segera dipinjam ya 😊",
+                ]);
+            } catch (\Exception $e) {
+                // Simpan log error agar tidak mengganggu proses update
+                Log::error('Gagal mengirim pesan ke Fonnte: '.$e->getMessage());
+            }
+        }
+
+        return redirect()
+            ->route('buku.index')
+            ->with('success', 'Data buku berhasil diperbarui.');
     }
-
-    $buku->update($data);
-
-if ($buku->stok > 0) {
-    $response = Http::withHeaders([
-        'Authorization' => '8dhtqM3Nr8UsKnqzM88u' // API Key Fonnte
-    ])->post('https://api.fonnte.com/send', [
-        'target' => '6287771600494', // nomor tujuan
-        'message' => "📚 Halo, buku *{$buku->judul}* sekarang sudah tersedia di perpustakaan. Silakan segera dipinjam ya 😊",
-    ]);
-}
-
-    return redirect()->route('buku.index', $buku->id)
-        ->with('success', 'Data buku berhasil diperbarui.');
-}
 
 
     /**

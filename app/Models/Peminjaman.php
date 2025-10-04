@@ -13,6 +13,12 @@ class Peminjaman extends Model
         'tanggal_kembali', 'tenggat', 'denda', 'status'
     ];
 
+    protected $casts = [
+        'tanggal_pinjam'    => 'datetime',
+        'tenggat'           => 'datetime',
+        'tanggal_kembali'   => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

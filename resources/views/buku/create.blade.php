@@ -2,8 +2,11 @@
     <x-slot name="header">
         <div class="flex items-center space-x-4">
             <a href="{{ route('buku.index') }}" class="text-white hover:text-blue-700">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
             <h1 class="text-xl text-white dark:text-gray-300 font-semibold">Tambah Buku</h1>
@@ -18,6 +21,7 @@
                     <form action="{{ route('buku.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
+                        {{-- Kategori --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Kategori</label>
                             <select name="kategori_id" class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
@@ -31,6 +35,7 @@
                             @error('kategori_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Judul --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Judul</label>
                             <input type="text" name="judul" value="{{ old('judul') }}"
@@ -38,6 +43,7 @@
                             @error('judul') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Penulis --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Penulis</label>
                             <input type="text" name="penulis" value="{{ old('penulis') }}"
@@ -45,6 +51,7 @@
                             @error('penulis') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Penerbit --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Penerbit</label>
                             <input type="text" name="penerbit" value="{{ old('penerbit') }}"
@@ -52,6 +59,7 @@
                             @error('penerbit') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Tahun Terbit --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Tahun Terbit</label>
                             <input type="number" name="tahun_terbit" value="{{ old('tahun_terbit') }}"
@@ -59,6 +67,7 @@
                             @error('tahun_terbit') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Jumlah Halaman --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Jumlah Halaman</label>
                             <input type="number" name="jumlah_halaman" value="{{ old('jumlah_halaman') }}"
@@ -66,6 +75,7 @@
                             @error('jumlah_halaman') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Stok --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Stok</label>
                             <input type="number" name="stok" value="{{ old('stok') }}"
@@ -73,10 +83,10 @@
                             @error('stok') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Sumber Pengadaan --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Sumber Pengadaan</label>
-                            <select name="sumber_pengadaan"
-                                class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
+                            <select name="sumber_pengadaan" class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
                                 <option value="">-- Pilih Sumber --</option>
                                 <option value="hibah" {{ old('sumber_pengadaan')=='hibah' ? 'selected' : '' }}>Hibah</option>
                                 <option value="pemerintah" {{ old('sumber_pengadaan')=='pemerintah' ? 'selected' : '' }}>Pemerintah</option>
@@ -84,12 +94,14 @@
                             @error('sumber_pengadaan') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Gambar --}}
                         <div class="mb-3">
                             <label class="block font-medium text-sm text-gray-700">Gambar Buku</label>
                             <input type="file" name="gambar" class="form-control w-full border-gray-300 rounded-md shadow-sm">
                             @error('gambar') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Tombol --}}
                         <div class="mt-4">
                             <button type="submit"
                                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">

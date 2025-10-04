@@ -25,6 +25,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role'
     ];
 
     /**
@@ -48,5 +49,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function hasRole($role): bool
+    {
+        if (is_array($role)) {
+            return in_array($this->role, $role);
+        }
+        return $this->role === $role;
     }
 }

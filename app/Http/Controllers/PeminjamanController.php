@@ -46,23 +46,45 @@ public function tampil()
 
     public function store(Request $request)
     {
-        $request->validate([
+        // 🔹 Validasi input
+        $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'buku_id' => 'required|exists:buku,id',
             'jumlah'  => 'required|integer|min:1',
         ]);
 
-        $buku = Buku::findOrFail($request->buku_id);
-        $jumlah = $request->jumlah;
+        $user = Auth::user();
+        $buku = Buku::findOrFail($validated['buku_id']);
+        $jumlah = $validated['jumlah'];
 
-        // Tentukan status berdasarkan stok
+        // 🔹 Cegah peminjaman ganda oleh anggota
+        if ($user->getRoleNames('anggota')) {
+            $sudahPinjam = Peminjaman::where('user_id', $user->id)
+                ->where('buku_id', $buku->id)
+                ->whereNull('tanggal_kembali')
+                ->exists();
+
+                if ($sudahPinjam) {
+                    return back()
+                        ->with('error', 'Anda sudah meminjam buku ini dan belum mengembalikannya.')
+                        ->withInput();
+                }
+        }
+
+        // 🔹 Tentukan status (dipinjam / reservasi)
         $status = $buku->stok >= $jumlah ? 'dipinjam' : 'reservasi';
 
+        // 🔹 Jika stok cukup, kurangi stok
         if ($status === 'dipinjam') {
+            if ($buku->stok < $jumlah) {
+                return back()->withErrors([
+                    'jumlah' => 'Stok buku tidak mencukupi untuk jumlah yang diminta.'
+                ])->withInput();
+            }
             $buku->decrement('stok', $jumlah);
         }
 
-        // Hitung antrian jika reservasi
+        // 🔹 Jika reservasi, hitung posisi antrian
         $antrian = null;
         if ($status === 'reservasi') {
             $last = Peminjaman::where('buku_id', $buku->id)
@@ -71,21 +93,29 @@ public function tampil()
             $antrian = $last ? $last + 1 : 1;
         }
 
+        // 🔹 Simpan data peminjaman
         Peminjaman::create([
-            'user_id'        => $request->user_id,
+            'user_id'        => $validated['user_id'],
             'buku_id'        => $buku->id,
             'jumlah'         => $jumlah,
-        'tanggal_pinjam' => $status === 'dipinjam' ? now() : null,
-    'tenggat'        => $status === 'dipinjam' ? now()->addDays(7) : null,
-
+            'tanggal_pinjam' => $status === 'dipinjam' ? now() : null,
+            'tenggat'        => $status === 'dipinjam' ? now()->addDays(7) : null,
             'status'         => $status,
             'antrian'        => $antrian,
         ]);
 
-        return in_array(Auth::user()->id_role, [1,2])
-            ? redirect()->route('peminjaman.index')->with('success', "Peminjaman berhasil ditambahkan dengan status: {$status}")
-            : redirect()->route('buku.index')->with('success', 'Buku berhasil dipinjam / masuk antrian!');
+        // 🔹 Redirect berdasarkan role user
+        if ($user->hasAnyRole(['admin', 'petugas'])) {
+            return redirect()
+                ->route('peminjaman.index')
+                ->with('success', "Peminjaman berhasil ditambahkan dengan status: {$status}");
+        }
+
+        return redirect()
+            ->route('buku.index')
+            ->with('success', 'Buku berhasil dipinjam atau masuk ke dalam antrian!');
     }
+
 public function refresh()
 {
     $peminjamans = Peminjaman::where('status', 'dipinjam')->get();

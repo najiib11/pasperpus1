@@ -1,69 +1,37 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center space-x-4">
-            <a href="{{ route('siswa.index') }}" class="text-white hover:text-blue-700">
+            <a href="{{ route('guru.index') }}" class="text-white hover:text-blue-700">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                      stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <h1 class="text-xl text-white dark:text-gray-300 font-semibold">Tambah Siswa</h1>
+            <h1 class="text-xl text-white dark:text-gray-300 font-semibold">Tambah Guru</h1>
         </div>
     </x-slot>
 
     <div class="py-6">
         <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow sm:rounded-lg p-6">
-                <form action="{{ route('siswa.store') }}" method="POST" class="space-y-4">
+                <form action="{{ route('guru.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
 
-                    {{-- NISN --}}
+                    {{-- NIP --}}
                     <div>
-                        <label class="block font-medium">NISN</label>
-                        <input type="text" name="nisn" value="{{ old('nisn') }}"
-                               class="w-full border rounded px-3 py-2 @error('nisn') border-red-500 @enderror">
-                        @error('nisn') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                        <label class="block font-medium">NIP</label>
+                        <input type="text" name="nip" value="{{ old('nip') }}"
+                               class="w-full border rounded px-3 py-2 @error('nip') border-red-500 @enderror">
+                        @error('nip') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Nama --}}
                     <div>
-                        <label class="block font-medium">Nama Siswa</label>
+                        <label class="block font-medium">Nama Guru</label>
                         <input type="text" name="nama" value="{{ old('nama') }}"
                                class="w-full border rounded px-3 py-2 @error('nama') border-red-500 @enderror">
                         @error('nama') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- Jurusan --}}
-                    <div>
-                        <label class="block font-medium">Jurusan</label>
-                        <select name="jurusan" class="w-full border rounded px-3 py-2 @error('jurusan') border-red-500 @enderror">
-                            <option value="">-- Pilih Jurusan --</option>
-                            <option value="Akuntansi" {{ old('jurusan') == 'Akuntansi' ? 'selected' : '' }}>Akuntansi</option>
-                            <option value="Perkantoran" {{ old('jurusan') == 'Perkantoran' ? 'selected' : '' }}>Perkantoran</option>
-                            <option value="Pemasaran" {{ old('jurusan') == 'Pemasaran' ? 'selected' : '' }}>Pemasaran</option>
-                            <option value="Otomotif" {{ old('jurusan') == 'Otomotif' ? 'selected' : '' }}>Otomotif</option>
-                            <option value="Elektronika" {{ old('jurusan') == 'Elektronika' ? 'selected' : '' }}>Elektronika</option>
-                            <option value="Komputer Jaringan" {{ old('jurusan') == 'Komputer Jaringan' ? 'selected' : '' }}>Komputer Jaringan</option>
-                        </select>
-                        @error('jurusan') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- Kelas --}}
-                    <div>
-                        <label class="block font-medium">Kelas</label>
-                        <input type="text" name="kelas" placeholder="Contoh: X-1, XI-2, XII-3"
-                               value="{{ old('kelas') }}"
-                               class="w-full border rounded px-3 py-2 @error('kelas') border-red-500 @enderror">
-                        @error('kelas') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- Alamat --}}
-                    <div>
-                        <label class="block font-medium">Alamat</label>
-                        <textarea name="alamat" rows="2"
-                                  class="w-full border rounded px-3 py-2 @error('alamat') border-red-500 @enderror">{{ old('alamat') }}</textarea>
-                        @error('alamat') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Jenis Kelamin --}}
@@ -109,13 +77,33 @@
                         </div>
                     </div>
 
+                    {{-- Alamat --}}
+                    <div>
+                        <label class="block font-medium">Alamat</label>
+                        <textarea name="alamat" rows="2"
+                                  class="w-full border rounded px-3 py-2 @error('alamat') border-red-500 @enderror">{{ old('alamat') }}</textarea>
+                        @error('alamat') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- Upload Foto --}}
+                    <div>
+                        <label class="block font-medium">Foto</label>
+                        <input type="file" name="foto" id="foto" accept="image/*"
+                               class="w-full border rounded px-3 py-2 @error('foto') border-red-500 @enderror">
+                        @error('foto') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+
+                        <div class="mt-3">
+                            <img id="preview" src="#" alt="Preview Foto" class="hidden w-32 h-32 object-cover rounded border shadow">
+                        </div>
+                    </div>
+
                     {{-- Tombol --}}
                     <div class="flex justify-end gap-3 mt-4">
                         <button type="submit"
                                 class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                             Simpan
                         </button>
-                        <a href="{{ route('siswa.index') }}"
+                        <a href="{{ route('guru.index') }}"
                            class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                             Batal
                         </a>
@@ -124,4 +112,23 @@
             </div>
         </div>
     </div>
+
+    {{-- Preview Foto Otomatis --}}
+    <script>
+        document.getElementById('foto').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('preview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '#';
+                preview.classList.add('hidden');
+            }
+        });
+    </script>
 </x-app-layout>
