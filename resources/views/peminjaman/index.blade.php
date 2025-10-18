@@ -279,14 +279,61 @@
         btnAction.onclick = function () {
             window.location.href = `/peminjaman/kembalikan/${id}`;
         };
-    } else if (selectedPeminjaman.status === 'reservasi') {
-        btnAction.textContent = 'Edit';
-        btnAction.classList.add('bg-yellow-500');
-        btnAction.disabled = false;
-        btnAction.onclick = function () {
-            window.location.href = `/peminjaman/${id}/edit`;
-        };
-    } else {
+        } else if (selectedPeminjaman.status === 'reservasi') {
+            btnAction.textContent = 'Konfirmasi';
+            btnAction.classList.add('bg-green-500', 'hover:bg-green-600');
+            btnAction.disabled = false;
+            btnAction.onclick = function () {
+                Swal.fire({
+                    title: 'Konfirmasi Reservasi?',
+                    text: 'Apakah kamu yakin ingin mengubah status reservasi ini menjadi peminjaman?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#16a34a', // warna hijau Tailwind
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Konfirmasi',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/peminjaman/konfirmasi/${id}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                Swal.fire({
+                                    title: 'Berhasil!',
+                                    text: 'Reservasi berhasil dikonfirmasi menjadi peminjaman.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#16a34a'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Gagal!',
+                                    text: 'Gagal mengonfirmasi peminjaman.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33'
+                                });
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Terjadi kesalahan saat mengonfirmasi.',
+                                icon: 'error',
+                                confirmButtonColor: '#d33'
+                            });
+                        });
+                    }
+                });
+            };
+        }
+ else {
         btnAction.classList.add('hidden');
         btnAction.disabled = true;
     }

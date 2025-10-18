@@ -57,6 +57,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/peminjaman/tampil', [PeminjamanController::class, 'tampil'])
     ->name('peminjaman.tampil');
     Route::resource('peminjaman', PeminjamanController::class);
+    Route::post('/peminjaman/konfirmasi/{id}', [PeminjamanController::class, 'konfirmasi'])->name('peminjaman.konfirmasi');
+
 
 
     Route::post('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.anggota');

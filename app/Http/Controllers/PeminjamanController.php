@@ -9,6 +9,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
+
 class PeminjamanController extends Controller
 {
     public function index()
@@ -23,6 +24,32 @@ class PeminjamanController extends Controller
 
         return view('peminjaman.index', compact('peminjamans', 'reservasiGrouped'));
     }
+    public function konfirmasi($id)
+    {
+        try {
+            $peminjaman = Peminjaman::findOrFail($id);
+
+            // Pastikan status saat ini reservasi
+            if ($peminjaman->status !== 'reservasi') {
+                return back()->with('error', 'Hanya reservasi yang bisa dikonfirmasi.');
+            }
+
+            // Ubah status ke dipinjam
+            $peminjaman->update([
+                'status' => 'dipinjam',
+            ]);
+
+            return back()->with('success', 'Reservasi berhasil dikonfirmasi menjadi peminjaman!');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->with('error', 'Data peminjaman tidak ditemukan.');
+        } catch (\Exception $e) {
+            // Simpan log error jika perlu
+            \Log::error('Kesalahan konfirmasi peminjaman: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengonfirmasi peminjaman.');
+        }
+    }
+
+
 
 public function tampil()
 {
@@ -230,20 +257,27 @@ $peminjaman->save();
 
     public function reservasi(Request $request, $bukuId)
     {
-        $last = Peminjaman::where('buku_id', $bukuId)
-            ->where('status', 'reservasi')
-            ->max('antrian');
-        $antrian = $last ? $last + 1 : 1;
-
-        Peminjaman::create([
-            'user_id' => auth()->id(),
-            'buku_id' => $bukuId,
-            'status'  => 'reservasi',
-            'antrian' => $antrian,
+        // Validasi input tanggal
+        $request->validate([
+            'tanggal_pinjam' => 'required|date|after_or_equal:today',
         ]);
 
+        // Hitung tanggal tenggat (7 hari setelah tanggal_pinjam)
+        $tanggalTenggat = Carbon::parse($request->tanggal_pinjam)->addDays(7);
+
+        // Simpan data reservasi
+        Peminjaman::create([
+            'user_id'         => auth()->id(),
+            'buku_id'         => $bukuId,
+            'status'          => 'reservasi',
+            'tanggal_pinjam'  => $request->tanggal_pinjam,
+            'tenggat' => $tanggalTenggat,
+        ]);
+
+        // Redirect sesuai role
         return in_array(Auth::user()->id_role, [1, 2])
-            ? redirect()->route('peminjaman.index')->with('success', 'Reservasi berhasil ditambahkan ke antrian!')
-            : redirect()->route('buku.index')->with('success', 'Reservasi berhasil ditambahkan ke antrian!');
+            ? redirect()->route('peminjaman.index')->with('success', 'Reservasi berhasil dibuat!')
+            : redirect()->route('buku.index')->with('success', 'Reservasi berhasil dibuat!');
     }
+
 }
