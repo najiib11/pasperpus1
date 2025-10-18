@@ -13,6 +13,7 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Writer;
+use Illuminate\Support\Facades\DB;
 
 
 class SiswaController extends Controller
@@ -44,21 +45,42 @@ class SiswaController extends Controller
             'tempat_lahir' => 'required',
         ]);
 
-        // Simpan ke tabel siswa
-        $siswa = Siswa::create($request->all());
+        // Gunakan transaksi agar jika salah satu gagal, data tidak setengah masuk
+        DB::beginTransaction();
 
-        // Buat akun user untuk siswa tersebut
-        $user = User::create([
-            'name' => $request->nama,
-            'email' => $request->email,
-            'password' => Hash::make('password123'), // bisa diset password = NISN
-        ]);
+        try {
+            // 1️⃣ Buat akun user terlebih dahulu
+            $user = User::create([
+                'name' => $request->nama,
+                'email' => $request->email,
+                'password' => Hash::make($request->nisn), // bisa diset password sesuai NISN
+            ]);
 
-        // Beri role 'anggota'
-        $user->assignRole('anggota');
+            // 2️⃣ Buat data siswa dan hubungkan dengan user_id
+            $siswa = Siswa::create([
+                'user_id' => $user->id,
+                'nisn' => $request->nisn,
+                'nama' => $request->nama,
+                'jurusan' => $request->jurusan,
+                'kelas' => $request->kelas,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'email' => $request->email,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'tempat_lahir' => $request->tempat_lahir,
+            ]);
 
-        return redirect()->route('siswa.index')->with('success', 'Data siswa dan akun pengguna berhasil ditambahkan.');
+            // 3️⃣ Beri role 'anggota' ke user
+            $user->assignRole('anggota');
+
+            DB::commit();
+
+            return redirect()->route('siswa.index')->with('success', 'Data siswa dan akun pengguna berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
+
 
     public function show(Siswa $siswa)
     {

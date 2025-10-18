@@ -56,12 +56,39 @@
                     @endif
 
                     {{-- Tombol Reservasi --}}
-                    <form action="{{ route('reservasi.konfirmasi', $buku->id) }}" method="POST" class="mt-4">
-                        @csrf
-                        <input type="submit" value="Reservasi Buku"
-                            class="{{ $buku->stok > 0 ? 'hidden' : '' }} inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    </form>
+                    <button type="button"
+                        class="{{ $buku->stok > 0 ? 'hidden' : '' }} inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4"
+                        onclick="openReservasiModal()">
+                        Reservasi Buku
+                    </button>
 
+                    {{-- Modal Reservasi Buku --}}
+                    <div id="reservasiModal"
+                        class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
+                        <div class="bg-white rounded-lg shadow-lg p-6 w-80">
+                            <h2 class="text-lg font-bold mb-4">Reservasi Buku</h2>
+                            <form action="{{ route('reservasi.konfirmasi', $buku->id) }}" method="POST">
+                                @csrf
+
+                                <div class="mb-4">
+                                    <label for="tanggal_pinjam" class="block font-medium mb-1">Tanggal Pinjam</label>
+                                    <input type="date" name="tanggal_pinjam" id="tanggal_pinjam" required
+                                        class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                </div>
+
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" onclick="closeReservasiModal()"
+                                        class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">
+                                        Batal
+                                    </button>
+                                    <button type="submit"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                        Konfirmasi
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                     {{-- Form Pinjam --}}
                     @if(!Auth::user()->hasRole('pustakawan'))
                         @if(Auth::user()->hasRole('guru'))
@@ -144,5 +171,14 @@
                 });
             });
         });
+    </script>
+    <script>
+        function openReservasiModal() {
+            document.getElementById('reservasiModal').classList.remove('hidden');
+        }
+
+        function closeReservasiModal() {
+            document.getElementById('reservasiModal').classList.add('hidden');
+        }
     </script>
 </x-app-layout>
