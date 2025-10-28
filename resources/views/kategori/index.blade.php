@@ -11,7 +11,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 min-w-6xl max-w-5xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white shadow rounded-lg p-6">
 
             @if ($errors->any())

@@ -254,17 +254,38 @@
     tenggat.setDate(tenggat.getDate() + 7);
     const tenggatFormatted = tenggat.toISOString().split('T')[0];
 
-    // Isi konten modal
+    // Ubah format tanggal ke d-m-y
+    const formatTanggal = (tanggalString) => {
+        const tanggal = new Date(tanggalString);
+        const day = String(tanggal.getDate()).padStart(2, '0');
+        const month = String(tanggal.getMonth() + 1).padStart(2, '0');
+        const year = tanggal.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
+    // Pastikan hanya diformat jika ada tanggal
+    const tanggalPinjamFormatted = selectedPeminjaman.tanggal_pinjam
+        ? formatTanggal(selectedPeminjaman.tanggal_pinjam)
+        : '-';
+
+    const tanggalKembaliFormatted = selectedPeminjaman.tanggal_kembali
+        ? formatTanggal(selectedPeminjaman.tanggal_kembali)
+        : '-';
+
+    const tanggalTenggatFormatted = selectedPeminjaman.tenggat
+        ? formatTanggal(selectedPeminjaman.tenggat)
+        : '-';
+
+    // Tampilkan di modal
     modalContent.innerHTML = `
         <p><strong>Nama Peminjam:</strong> ${selectedPeminjaman.user.name}</p>
         <p><strong>Judul Buku:</strong> ${selectedPeminjaman.buku.judul}</p>
-        <p><strong>Tanggal Pinjam:</strong> ${selectedPeminjaman.tanggal_pinjam}</p>
-        <p><strong>Tenggat Waktu:</strong> ${tenggatFormatted}</p>
-        <p><strong>Tanggal Kembali:</strong> ${selectedPeminjaman.tanggal_kembali ?? '-'}</p>
+        <p><strong>Tanggal Pinjam:</strong> ${tanggalPinjamFormatted}</p>
+        <p><strong>Tenggat Waktu:</strong> ${tanggalTenggatFormatted}</p>
+        <p><strong>Tanggal Kembali:</strong> ${tanggalKembaliFormatted}</p>
         <p><strong>Status:</strong> ${selectedPeminjaman.status.charAt(0).toUpperCase() + selectedPeminjaman.status.slice(1)}</p>
         <p><strong>Denda:</strong> Rp ${selectedPeminjaman.denda.toLocaleString()}</p>
     `;
-
     // Reset tombol terlebih dahulu
     btnAction.classList.remove('hidden', 'bg-blue-500', 'bg-yellow-500');
     btnAction.disabled = true;
@@ -295,6 +316,17 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
+
+                        // 🔹 Tampilkan SweetAlert loading sebelum fetch dijalankan
+                        Swal.fire({
+                            title: 'Sedang memproses...',
+                            text: 'Mohon tunggu sebentar.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
                         fetch(`/peminjaman/konfirmasi/${id}`, {
                             method: 'POST',
                             headers: {
@@ -303,6 +335,8 @@
                             }
                         })
                         .then(response => {
+                            Swal.close(); // 🔹 Tutup alert loading setelah respon diterima
+
                             if (response.ok) {
                                 Swal.fire({
                                     title: 'Berhasil!',
@@ -322,6 +356,7 @@
                             }
                         })
                         .catch(() => {
+                            Swal.close(); // 🔹 Tutup loading jika terjadi error
                             Swal.fire({
                                 title: 'Error!',
                                 text: 'Terjadi kesalahan saat mengonfirmasi.',
@@ -331,6 +366,7 @@
                         });
                     }
                 });
+
             };
         }
  else {
