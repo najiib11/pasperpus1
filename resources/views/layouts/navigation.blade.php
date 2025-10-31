@@ -1,127 +1,123 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <img src="{{ asset('storage/images.png') }}" alt="Logo" class="h-12 w-auto">
-                    </a>
-                </div>
+<aside id="default-sidebar" class="top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
+   <div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+      <ul class="space-y-2 font-medium">
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                   @if(Auth::user()->hasRole('pustakawan'))
-                    <x-nav-link :href="route('kategori.index')" :active="request()->routeIs('kategori.*')">
-                        {{ __('Kategori Buku') }}
-                    </x-nav-link>
-                    @endif
-                    <x-nav-link :href="route('buku.index')" :active="request()->routeIs('buku.*')">
-                        {{ __('Daftar Buku') }}
-                    </x-nav-link>
-                    @if(Auth::user()->hasRole('pustakawan'))
-                    <x-nav-link :href="route('peminjaman.index')" :active="request()->routeIs('peminjaman.*')">
-                        {{ __('Peminjaman Buku') }}
-                    </x-nav-link>
+         {{-- Dashboard --}}
+         <li>
+            <a href="{{ route('dashboard') }}"
+               class="flex items-center p-2 rounded-lg
+                      {{ request()->routeIs('dashboard') ? 'bg-gray-200 dark:bg-gray-700 text-blue-700' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+               <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-blue-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21">
+                  <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998A8.5 8.5 0 1 0 17.973 12.066a.999.999 0 0 0-1-1.066Z"/>
+                  <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z"/>
+               </svg>
+               <span class="ms-3">Dashboard</span>
+            </a>
+         </li>
 
-                    <x-nav-link :href="route('siswa.index')" :active="request()->routeIs('siswa.*')">
-                        {{ __('Data Siswa') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('guru.index')" :active="request()->routeIs('guru.*')">
-                        {{ __('Data Guru') }}
-                    </x-nav-link>
-                    @endif
+         {{-- Hanya untuk pustakawan --}}
+         @if(Auth::user()->hasRole('pustakawan'))
 
-                    @if(!Auth::user()->hasRole('pustakawan'))
-                    <x-nav-link :href="route('peminjaman.tampil')" :active="request()->routeIs('peminjaman.*')">
-                        {{ __('Riwayat Peminjaman') }}
-                    </x-nav-link>
-                    @endif
+         {{-- Kategori Buku --}}
+         <li>
+            <a href="{{ route('kategori.index') }}"
+               class="flex items-center p-2 rounded-lg
+                      {{ request()->routeIs('kategori.*') ? 'bg-gray-200 dark:bg-gray-700 text-blue-700' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+               <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M4 3a1 1 0 0 0-1 1v12a1 1 0 0 0 1.447.894L10 14.118l5.553 2.776A1 1 0 0 0 17 16V4a1 1 0 0 0-1-1H4Z" />
+               </svg>
+               <span class="ms-3">Kategori Buku</span>
+            </a>
+         </li>
 
-                </div>
-            </div>
+         {{-- Daftar Buku --}}
+         <li>
+            <a href="{{ route('buku.index') }}"
+               class="flex items-center p-2 rounded-lg
+                      {{ request()->routeIs('buku.*') ? 'bg-gray-200 dark:bg-gray-700 text-blue-700' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+               <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400" fill="currentColor" viewBox="0 0 18 18">
+                  <path d="M3 2a1 1 0 0 0-1 1v13a1 1 0 0 0 1.447.894L9 14.118l5.553 2.776A1 1 0 0 0 16 16V3a1 1 0 0 0-1-1H3Z" />
+               </svg>
+               <span class="ms-3">Daftar Buku</span>
+            </a>
+         </li>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+         {{-- Peminjaman Buku --}}
+         <li>
+            <a href="{{ route('peminjaman.index') }}"
+               class="flex items-center p-2 rounded-lg
+                      {{ request()->routeIs('peminjaman.*') ? 'bg-gray-200 dark:bg-gray-700 text-blue-700' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+               <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M4 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9l5-5V4a2 2 0 0 0-2-2H4Zm9 13.5V11h4.5L13 15.5Z"/>
+               </svg>
+               <span class="ms-3">Peminjaman Buku</span>
+            </a>
+         </li>
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+         {{-- Data Siswa --}}
+         <li>
+            <a href="{{ route('siswa.index') }}"
+               class="flex items-center p-2 rounded-lg
+                      {{ request()->routeIs('siswa.*') ? 'bg-gray-200 dark:bg-gray-700 text-blue-700' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+               <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 18">
+                  <path d="M6 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6ZM6 9a6 6 0 0 0-6 6v2h12v-2a6 6 0 0 0-6-6Z" />
+               </svg>
+               <span class="ms-3">Data Siswa</span>
+            </a>
+         </li>
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+         {{-- Data Guru --}}
+         <li>
+            <a href="{{ route('guru.index') }}"
+               class="flex items-center pe-2 py-2 rounded-lg
+                      {{ request()->routeIs('guru.*') ? 'bg-gray-200 dark:bg-gray-700 text-blue-700' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+               <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 18">
+                  <path d="M14 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6ZM14 9a6 6 0 0 0-6 6v2h12v-2a6 6 0 0 0-6-6Z" />
+               </svg>
+               <span class="ms-3">Data Guru</span>
+            </a>
+         </li>
 
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
+         @endif
 
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
+         {{-- Untuk user biasa (bukan pustakawan) --}}
+         @if(!Auth::user()->hasRole('pustakawan'))
+         <li>
+            <a href="{{ route('peminjaman.tampil') }}"
+               class="flex items-center p-2 rounded-lg
+                      {{ request()->routeIs('peminjaman.tampil') ? 'bg-gray-200 dark:bg-gray-700 text-blue-700' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+               <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400" fill="currentColor" viewBox="0 0 18 18">
+                  <path d="M3 2a1 1 0 0 0-1 1v13a1 1 0 0 0 1.447.894L9 14.118l5.553 2.776A1 1 0 0 0 16 16V3a1 1 0 0 0-1-1H3Z" />
+               </svg>
+               <span class="ms-3">Riwayat Peminjaman</span>
+            </a>
+         </li>
+         @endif
 
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
+         {{-- Profil & Logout --}}
+         <li class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-4">
+            <a href="{{ route('profile.edit') }}"
+               class="flex items-center p-2 rounded-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+               <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 2a6 6 0 0 1 4.472 10.158A7.978 7.978 0 0 1 10 18a7.978 7.978 0 0 1-4.472-5.842A6 6 0 0 1 10 2Z" clip-rule="evenodd"/>
+               </svg>
+               <span class="ms-3">Profil</span>
+            </a>
+         </li>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-        </div>
+         <li>
+            <form method="POST" action="{{ route('logout') }}">
+               @csrf
+               <button type="submit"
+                       class="flex items-center w-full p-2 text-left text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 18 16">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"/>
+                  </svg>
+                  <span class="ms-3">Logout</span>
+               </button>
+            </form>
+         </li>
 
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
-        </div>
-    </div>
-</nav>
+      </ul>
+   </div>
+</aside>
