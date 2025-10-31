@@ -62,6 +62,30 @@
              </a>
           </li>
 
+          {{-- Reservasi Buku --}}
+          <li>
+             <a href="{{ route('reservasi.index') }}"
+                class="flex items-center p-2 rounded-lg
+                       {{ request()->routeIs('reservasi.*') ? 'bg-gray-100 text-blue-500 font-semibold' : 'text-white hover:text-blue-500 hover:bg-white' }}">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                 <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
+                 </svg>
+                <span class="ms-3">Reservasi Buku</span>
+             </a>
+          </li>
+
+          {{-- Pengembalian Buku --}}
+          <li>
+             <a href="{{ route('pengembalian.index') }}"
+                class="flex items-center p-2 rounded-lg
+                       {{ request()->routeIs('pengembalian.*') ? 'bg-gray-100 text-blue-500 font-semibold' : 'text-white hover:text-blue-500 hover:bg-white' }}">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                 <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
+                 </svg>
+                <span class="ms-3">Pengembalian Buku</span>
+             </a>
+          </li>
+
           {{-- Data Siswa --}}
           <li>
              <a href="{{ route('siswa.index') }}"
@@ -104,15 +128,16 @@
           @endif
           <hr class="border-t-[1.5px] border-gray-200 ">
           {{-- Profil & Logout --}}
-          <li class="w-full flex items-center rounded-lg">
-             <a href="{{ route('profile.edit') }}" class="flex items-center w-full text-white hover:text-blue-500 hover:bg-white p-2 rounded-lg">
+          <li>
+            <a href="{{ route('profile.edit') }}"
+               class="flex items-center p-2 rounded-lg
+                      {{ request()->routeIs('profile.*') ? 'bg-gray-100 text-blue-500 font-semibold' : 'text-white hover:text-blue-500 hover:bg-white' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
-                    <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
-                  </svg>
-
-                <span class="ms-3">Profil</span>
-             </a>
-          </li>
+                <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
+                </svg>
+               <span class="ms-3">Profil</span>
+            </a>
+         </li>
 
           <li>
              <form method="POST" action="{{ route('logout') }}">

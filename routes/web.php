@@ -40,6 +40,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile/photo', [ProfileController::class, 'updatePhoto'])
+    ->name('profile.update-photo')
+    ->middleware('auth');
 
     /*
     |------------------------------
@@ -59,11 +62,18 @@ Route::middleware('auth')->group(function () {
     Route::resource('peminjaman', PeminjamanController::class);
     Route::post('/peminjaman/konfirmasi/{id}', [PeminjamanController::class, 'konfirmasi'])->name('peminjaman.konfirmasi');
 
-
-
     Route::post('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.anggota');
 
     Route::get('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.kembalikan');
+
+    /*
+    |------------------------------
+    | Pengembalian Admin
+    |------------------------------
+    */
+
+    Route::get('/pengembalian', [PeminjamanController::class, 'pengembalianIndex'])->name('pengembalian.index');
+
 
 
     /*
