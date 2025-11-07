@@ -18,9 +18,14 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 flex flex-row">
-            @include('layouts.navigation')
-            <div class="flex flex-col w-full">
+        <div class="min-h-screen bg-gray-100 flex">
+            <!-- Sidebar -->
+            <div class="fixed top-0 left-0 h-full w-64 bg-white shadow-md z-10">
+                @include('layouts.navigation')
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex flex-col w-full ml-64">
                 <!-- Page Heading -->
                 @isset($header)
                     <header class="bg-blue-400 shadow">
@@ -36,6 +41,7 @@
                 </main>
             </div>
         </div>
+
 
         {{-- ✅ SweetAlert Auto Trigger untuk session flash --}}
         <script>
@@ -60,5 +66,6 @@
                 @endif
             });
         </script>
+        @stack('scripts')
     </body>
 </html>
