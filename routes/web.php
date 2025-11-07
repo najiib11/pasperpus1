@@ -24,10 +24,10 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', fn () => view('dashboard'))
+Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
-
+Route::get('/buku-tamu', [BukuController::class, 'tamu'])->name('buku.tamu');
 // ===========================
 // ROUTE DENGAN MIDDLEWARE AUTH
 // ===========================
@@ -55,7 +55,7 @@ Route::middleware('auth')->group(function () {
     */
     Route::get('/peminjaman/refresh', [PeminjamanController::class, 'refresh'])->name('peminjaman.refresh');
     Route::get('/peminjaman/tampil', [PeminjamanController::class, 'tampil'])
-    ->name('peminjaman.tampil');
+        ->name('peminjaman.tampil');
     Route::resource('peminjaman', PeminjamanController::class);
     Route::post('/peminjaman/konfirmasi/{id}', [PeminjamanController::class, 'konfirmasi'])->name('peminjaman.konfirmasi');
 
@@ -64,6 +64,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.anggota');
 
     Route::get('/peminjaman/kembalikan/{id}', [PeminjamanController::class, 'kembalikan'])->name('peminjaman.kembalikan');
+    // Halaman kelola denda
+    Route::get('/denda', [PeminjamanController::class, 'kelolaDenda'])->name('peminjaman.keloladenda');
+    Route::post('/peminjaman/{id}/bayar-denda', [PeminjamanController::class, 'bayarDenda'])
+        ->name('peminjaman.bayarDenda');
 
 
     /*

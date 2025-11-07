@@ -49,26 +49,24 @@ class PeminjamanController extends Controller
         }
     }
 
+    public function tampil()
+    {
+        // ambil id user yang sedang login
+        $userId = Auth::id();
 
+        // ambil hanya peminjaman milik siswa login
+        $peminjamans = Peminjaman::with(['user', 'buku'])
+            ->where('user_id', $userId)
+            ->get();
 
-public function tampil()
-{
-    // ambil id user yang sedang login
-    $userId = Auth::id();
-
-    // ambil hanya peminjaman milik siswa login
-    $peminjamans = Peminjaman::with(['user', 'buku'])
-        ->where('user_id', $userId)
-        ->get();
-
-    return view('peminjaman.indexx', compact('peminjamans'));
-}
+        return view('peminjaman.indexx', compact('peminjamans'));
+    }
 
     public function create()
     {
         $buku = Buku::all();
         $users = User::all();
-        return view('peminjaman.create', compact('buku','users'));
+        return view('peminjaman.create', compact('buku', 'users'));
     }
 
     public function store(Request $request)
@@ -77,7 +75,7 @@ public function tampil()
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'buku_id' => 'required|exists:buku,id',
-            'jumlah'  => 'required|integer|min:1',
+            'jumlah' => 'required|integer|min:1',
         ]);
 
         $user = Auth::user();
@@ -91,11 +89,11 @@ public function tampil()
                 ->whereNull('tanggal_kembali')
                 ->exists();
 
-                if ($sudahPinjam) {
-                    return back()
-                        ->with('error', 'Anda sudah meminjam buku ini dan belum mengembalikannya.')
-                        ->withInput();
-                }
+            if ($sudahPinjam) {
+                return back()
+                    ->with('error', 'Anda sudah meminjam buku ini dan belum mengembalikannya.')
+                    ->withInput();
+            }
         }
 
         // 🔹 Tentukan status (dipinjam / reservasi)
@@ -122,13 +120,13 @@ public function tampil()
 
         // 🔹 Simpan data peminjaman
         Peminjaman::create([
-            'user_id'        => $validated['user_id'],
-            'buku_id'        => $buku->id,
-            'jumlah'         => $jumlah,
+            'user_id' => $validated['user_id'],
+            'buku_id' => $buku->id,
+            'jumlah' => $jumlah,
             'tanggal_pinjam' => $status === 'dipinjam' ? now() : null,
-            'tenggat'        => $status === 'dipinjam' ? now()->addDays(7) : null,
-            'status'         => $status,
-            'antrian'        => $antrian,
+            'tenggat' => $status === 'dipinjam' ? now()->addDays(7) : null,
+            'status' => $status,
+            'antrian' => $antrian,
         ]);
 
         // 🔹 Redirect berdasarkan role user
@@ -143,32 +141,33 @@ public function tampil()
             ->with('success', 'Buku berhasil dipinjam atau masuk ke dalam antrian!');
     }
 
-public function refresh()
-{
-    $peminjamans = Peminjaman::where('status', 'dipinjam')->get();
-    $today = Carbon::today(); // tanggal hari ini
+    public function refresh()
+    {
+        $peminjamans = Peminjaman::all(); // ambil semua, bisa dikembalikan atau dipinjam
 
-    foreach ($peminjamans as $peminjaman) {
-        if ($peminjaman->tenggat) {
-            $tenggat = Carbon::parse($peminjaman->tenggat)->startOfDay();
+        foreach ($peminjamans as $peminjaman) {
+            // Pastikan ada tenggat dan tanggal_kembali
+            if ($peminjaman->tenggat && $peminjaman->tanggal_kembali) {
+                $tenggat = Carbon::parse($peminjaman->tenggat)->startOfDay();
+                $tanggalKembali = Carbon::parse($peminjaman->tanggal_kembali)->startOfDay();
 
-            if ($today->gt($tenggat)) {
-                $hariTelat = $tenggat->diffInDays($today); // selisih dari tenggat ke hari ini
-                $peminjaman->denda = $hariTelat * 1000;
+                // kalau tanggal kembali > tenggat → terlambat
+                if ($tanggalKembali->gt($tenggat)) {
+                    $hariTelat = $tenggat->diffInDays($tanggalKembali);
+                    $peminjaman->denda = $hariTelat * 1000;
+                } else {
+                    $peminjaman->denda = 0;
+                }
+
             } else {
-                $peminjaman->denda = 0;
+                $peminjaman->denda = 0; // belum dikembalikan atau tidak ada tenggat
             }
-        } else {
-            $peminjaman->denda = 0;
+
+            $peminjaman->save();
         }
 
-        $peminjaman->save();
+        return redirect()->back()->with('success', 'Denda berhasil diperbarui');
     }
-
-    return redirect()->back()->with('success', 'Denda berhasil diperbarui berdasarkan tenggat waktu.');
-}
-
-
 
     public function show(Peminjaman $peminjaman)
     {
@@ -179,18 +178,18 @@ public function refresh()
     {
         $buku = Buku::all();
         $users = User::all();
-        return view('peminjaman.edit', compact('peminjaman','buku','users'));
+        return view('peminjaman.edit', compact('peminjaman', 'buku', 'users'));
     }
 
     public function update(Request $request, Peminjaman $peminjaman)
     {
         $request->validate([
-            'user_id'        => 'required|exists:users,id',
-            'buku_id'        => 'required|exists:buku,id',
-            'jumlah'         => 'required|integer|min:1',
+            'user_id' => 'required|exists:users,id',
+            'buku_id' => 'required|exists:buku,id',
+            'jumlah' => 'required|integer|min:1',
             'tanggal_pinjam' => 'nullable|date',
-            'tenggat'        => 'nullable|date',
-            'status'         => 'required|in:dipinjam,dikembalikan,reservasi',
+            'tenggat' => 'nullable|date',
+            'status' => 'required|in:dipinjam,dikembalikan,reservasi',
         ]);
 
         $data = $request->all();
@@ -217,32 +216,34 @@ public function refresh()
     }
 
 
-public function kembalikan($id)
-{
-    $peminjaman = Peminjaman::findOrFail($id);
-    $tanggalSekarang = Carbon::now();
+    public function kembalikan($id)
+    {
+        $peminjaman = Peminjaman::findOrFail($id);
 
-    $peminjaman->tanggal_kembali = $tanggalSekarang;
+        // Gunakan tanggal hari ini TANPA jam
+        $tanggalKembali = Carbon::today()->toDateString();
+        $peminjaman->tanggal_kembali = $tanggalKembali;
 
-    // Hitung denda jika terlambat
-    if ($peminjaman->tenggat && $tanggalSekarang->gt($peminjaman->tenggat)) {
-        // Hitung hari keterlambatan
-        $hariTelat = $tanggalSekarang->diffInDays($peminjaman->tenggat);
-        $peminjaman->denda = $hariTelat * 1000;
-$peminjaman->save();
- // Rp 1000 per hari
-    } else {
-        $peminjaman->denda = 0;
+        if ($peminjaman->tenggat) {
+            $tenggat = Carbon::parse($peminjaman->tenggat)->startOfDay();
+
+            if (Carbon::parse($tanggalKembali)->gt($tenggat)) {
+                $hariTelat = $tenggat->diffInDays($tanggalKembali);
+                $peminjaman->denda = $hariTelat * 1000;
+            } else {
+                $peminjaman->denda = 0;
+            }
+        } else {
+            $peminjaman->denda = 0;
+        }
+
+        $peminjaman->status = 'dikembalikan';
+        $peminjaman->save();
+
+        $peminjaman->buku->increment('stok', $peminjaman->jumlah);
+
+        return redirect()->back()->with('success', 'Buku berhasil dikembalikan! Denda: Rp ' . number_format($peminjaman->denda, 0, ',', '.'));
     }
-
-    $peminjaman->status = 'dikembalikan';
-    $peminjaman->save();
-
-    // Tambahkan stok buku kembali
-    $peminjaman->buku->increment('stok', $peminjaman->jumlah);
-
-    return redirect()->back()->with('success', 'Buku berhasil dikembalikan! Denda: Rp ' . number_format($peminjaman->denda, 0, ',', '.'));
-}
 
 
     public function daftarReservasi($bukuId)
@@ -267,10 +268,10 @@ $peminjaman->save();
 
         // Simpan data reservasi
         Peminjaman::create([
-            'user_id'         => auth()->id(),
-            'buku_id'         => $bukuId,
-            'status'          => 'reservasi',
-            'tanggal_pinjam'  => $request->tanggal_pinjam,
+            'user_id' => auth()->id(),
+            'buku_id' => $bukuId,
+            'status' => 'reservasi',
+            'tanggal_pinjam' => $request->tanggal_pinjam,
             'tenggat' => $tanggalTenggat,
         ]);
 
@@ -278,6 +279,26 @@ $peminjaman->save();
         return in_array(Auth::user()->id_role, [1, 2])
             ? redirect()->route('peminjaman.index')->with('success', 'Reservasi berhasil dibuat!')
             : redirect()->route('buku.index')->with('success', 'Reservasi berhasil dibuat!');
+    }
+    public function kelolaDenda()
+    {
+        // Ambil semua peminjaman yang sudah dikembalikan
+        $peminjamans = Peminjaman::with(['user', 'buku'])
+            ->where('status', 'dikembalikan')
+            ->orderBy('tanggal_kembali', 'desc') // opsional: urut dari terbaru
+            ->get();
+
+        // Kirim data ke view keloladenda.blade.php
+        return view('peminjaman.keloladenda', compact('peminjamans'));
+    }
+    public function bayarDenda($id)
+    {
+        $peminjaman = Peminjaman::findOrFail($id);
+
+        // Misal: tandai denda sudah dibayar
+        $peminjaman->update(['denda' => 0]);
+
+        return redirect()->route('peminjaman.keloladenda')->with('success', 'Denda berhasil dibayar!');
     }
 
 }

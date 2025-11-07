@@ -14,9 +14,9 @@ class Peminjaman extends Model
     ];
 
     protected $casts = [
-        'tanggal_pinjam'    => 'datetime',
-        'tenggat'           => 'datetime',
-        'tanggal_kembali'   => 'datetime',
+        'tanggal_pinjam'    => 'date',
+        'tenggat'           => 'date',
+        'tanggal_kembali'   => 'date',
     ];
 
     public function user()

@@ -22,7 +22,7 @@ class BukuController extends Controller
     public function index()
     {
         $kategoris = Kategori::with(relations: 'buku')->get();
-        $roles =\Spatie\Permission\Models\Role::all();
+        $roles = \Spatie\Permission\Models\Role::all();
         return view('buku.index', compact('kategoris', 'roles'));
     }
 
@@ -43,19 +43,25 @@ class BukuController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'judul'           => 'required',
-            'penulis'         => 'required',
-            'penerbit'        => 'required',
-            'tahun_terbit'    => 'required|digits:4|integer',
-            'jumlah_halaman'  => 'required|integer',
-            'sumber_pengadaan'=> 'required|in:hibah,pemerintah',
-            'kategori_id'     => 'required|exists:kategoris,id',
-            'gambar'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'judul' => 'required',
+            'penulis' => 'required',
+            'penerbit' => 'required',
+            'tahun_terbit' => 'required|digits:4|integer',
+            'jumlah_halaman' => 'required|integer',
+            'sumber_pengadaan' => 'required|in:hibah,pemerintah',
+            'kategori_id' => 'required|exists:kategoris,id',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->only([
-            'judul','penulis','penerbit','tahun_terbit',
-            'jumlah_halaman','sumber_pengadaan','kategori_id','stok'
+            'judul',
+            'penulis',
+            'penerbit',
+            'tahun_terbit',
+            'jumlah_halaman',
+            'sumber_pengadaan',
+            'kategori_id',
+            'stok'
         ]);
 
         if ($request->hasFile('gambar')) {
@@ -116,15 +122,15 @@ class BukuController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'judul'            => 'nullable|string|max:255',
-            'penulis'          => 'nullable|string|max:255',
-            'penerbit'         => 'nullable|string|max:255',
-            'tahun_terbit'     => 'nullable|digits:4|integer',
-            'jumlah_halaman'   => 'nullable|integer|min:1',
+            'judul' => 'nullable|string|max:255',
+            'penulis' => 'nullable|string|max:255',
+            'penerbit' => 'nullable|string|max:255',
+            'tahun_terbit' => 'nullable|digits:4|integer',
+            'jumlah_halaman' => 'nullable|integer|min:1',
             'sumber_pengadaan' => 'nullable|in:hibah,pemerintah',
-            'kategori_id'      => 'nullable|exists:kategoris,id',
-            'stok'             => 'nullable|integer|min:0',
-            'gambar'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'kategori_id' => 'nullable|exists:kategoris,id',
+            'stok' => 'nullable|integer|min:0',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $buku = Buku::findOrFail($id);
@@ -149,12 +155,12 @@ class BukuController extends Controller
                 Http::withHeaders([
                     'Authorization' => 'JMyhDU5DNLsdRZq4hBxj', // API Key Fonnte
                 ])->post('https://api.fonnte.com/send', [
-                    'target'  => '6287793183539',
-                    'message' => "📚 Halo, buku *{$buku->judul}* sekarang sudah tersedia di perpustakaan. Silakan segera dipinjam ya 😊",
-                ]);
+                            'target' => '6287793183539',
+                            'message' => "📚 Halo, buku *{$buku->judul}* sekarang sudah tersedia di perpustakaan. Silakan segera dipinjam ya 😊",
+                        ]);
             } catch (\Exception $e) {
                 // Simpan log error agar tidak mengganggu proses update
-                Log::error('Gagal mengirim pesan ke Fonnte: '.$e->getMessage());
+                Log::error('Gagal mengirim pesan ke Fonnte: ' . $e->getMessage());
             }
         }
 
@@ -172,5 +178,11 @@ class BukuController extends Controller
         $buku = Buku::findOrFail($id);
         $buku->delete();
         return redirect()->route('buku.index')->with('success', 'Buku berhasil dihapus.');
+    }
+    public function tamu()
+    {
+        $kategoris = \App\Models\Kategori::with('buku')->get();
+
+        return view('buku.tamu', compact('kategoris'));
     }
 }
