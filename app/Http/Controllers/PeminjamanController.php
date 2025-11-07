@@ -301,4 +301,14 @@ class PeminjamanController extends Controller
         return redirect()->route('peminjaman.keloladenda')->with('success', 'Denda berhasil dibayar!');
     }
 
+
+    public function pengembalianIndex()
+    {
+        $peminjamans = Peminjaman::with(['user', 'buku'])
+            ->where('status', 'dikembalikan')
+            ->get();
+
+        return view('pengembalian.index', compact('peminjamans'));
+    }
+
 }

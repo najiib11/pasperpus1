@@ -1,25 +1,291 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lupa Kata Sandi - Perpustakaan Ceria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.6) 0%, transparent 20%);
+            z-index: -1;
+        }
+
+        .book-icons {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .book-icon {
+            position: absolute;
+            color: #8b5a2b;
+            font-size: 24px;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .forgot-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(139, 90, 43, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: rgba(74, 124, 89, 0.6);
+            box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #4a7c59, #6ba46e);
+            box-shadow: 0 4px 15px rgba(74, 124, 89, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 124, 89, 0.4);
+        }
+
+        .floating-label {
+            transition: all 0.2s ease;
+        }
+
+        .floating-input:focus + .floating-label,
+        .floating-input:not(:placeholder-shown) + .floating-label {
+            top: -10px;
+            left: 10px;
+            font-size: 0.75rem;
+            color: #4a7c59;
+            background: white;
+            padding: 0 5px;
+        }
+
+        .session-status {
+            background: rgba(234, 250, 241, 0.9);
+            border: 1px solid rgba(74, 124, 89, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .title-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .magic-text {
+            background: linear-gradient(to right, #8b5a2b, #4a7c59, #8b5a2b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .pulse-glow {
+            animation: pulse-glow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 20px rgba(139, 90, 43, 0.1); }
+            100% { box-shadow: 0 0 30px rgba(74, 124, 89, 0.2); }
+        }
+
+        .book-animation {
+            animation: book-open 2s ease-in-out infinite alternate;
+            transform-origin: left center;
+        }
+
+        @keyframes book-open {
+            0% { transform: perspective(400px) rotateY(0deg); }
+            100% { transform: perspective(400px) rotateY(-15deg); }
+        }
+
+        .key-animation {
+            animation: key-float 3s ease-in-out infinite;
+        }
+
+        @keyframes key-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+    </style>
+</head>
+<body class="py-8 px-4 text-gray-800">
+    <!-- Background Book Icons -->
+    <div class="book-icons" id="bookIcons"></div>
+
+    <div class="max-w-md w-full mx-auto relative z-10">
+        <!-- Session Status -->
+        @if (session('status'))
+        <div class="session-status mb-6 p-4 rounded-lg text-green-700">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span>{{ session('status') }}</span>
+        </div>
+        @endif
+
+        <div class="forgot-card rounded-2xl p-8 w-full pulse-glow">
+            <div class="text-center mb-8">
+                <div class="flex justify-center mb-4">
+                    <div class="relative w-16 h-16">
+                        <i class="fas fa-book text-5xl text-amber-700 book-animation"></i>
+                        <i class="fas fa-key absolute -top-1 -right-1 text-xl text-amber-900 key-animation"></i>
+                    </div>
+                </div>
+                <h1 class="title-font text-3xl font-bold mb-2 magic-text">Lupa Kata Sandi?</h1>
+                <p class="text-amber-700 mb-6">
+                    Jangan khawatir! Masukkan email Anda dan kami akan mengirimkan link untuk mengatur ulang kata sandi Anda.
+                </p>
+            </div>
+
+            <form method="POST" action="{{ route('password.email') }}">
+                @csrf
+
+                <!-- Email Address -->
+                <div class="relative mb-6">
+                    <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        value="{{ old('email') }}"
+                        required autofocus
+                        placeholder=" "
+                        class="floating-input input-field w-full px-4 py-3 rounded-lg focus:outline-none text-gray-800 placeholder-transparent"
+                    >
+                    <label for="email" class="floating-label absolute left-4 top-3 text-amber-700 pointer-events-none">
+                        <i class="fas fa-envelope mr-2"></i>Alamat Email
+                    </label>
+                    @error('email')
+                        <div class="text-red-500 text-sm mt-1 ml-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-primary w-full py-3 rounded-lg text-white font-semibold mb-6">
+                    <i class="fas fa-paper-plane mr-2"></i>Kirim Link Reset Password
+                </button>
+
+                <div class="text-center">
+                    <p class="text-amber-700">
+                        Ingat kata sandi Anda?
+                        <a href="{{ route('login') }}" class="text-amber-700 hover:text-amber-900 font-medium transition-colors">Masuk di sini</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <div class="text-center mt-6 text-amber-700 text-sm opacity-70">
+            © {{ date('Y') }} Perpustakaan Ceria. Semua hak dilindungi.
+        </div>
     </div>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <script>
+        // Create floating book icons for background
+        function createBookIcons() {
+            const bookIconsContainer = document.getElementById('bookIcons');
+            const iconCount = 20;
+            const bookIcons = ['fa-book', 'fa-book-open', 'fa-bookmark', 'fa-key'];
 
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
+            for (let i = 0; i < iconCount; i++) {
+                const icon = document.createElement('i');
+                const randomIcon = bookIcons[Math.floor(Math.random() * bookIcons.length)];
+                icon.classList.add('book-icon', 'fas', randomIcon);
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+                // Random position
+                icon.style.left = `${Math.random() * 100}%`;
+                icon.style.top = `${Math.random() * 100}%`;
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+                // Random animation delay
+                icon.style.animationDelay = `${Math.random() * 6}s`;
+
+                // Random size
+                const size = Math.random() * 20 + 16;
+                icon.style.fontSize = `${size}px`;
+
+                bookIconsContainer.appendChild(icon);
+            }
+        }
+
+        // Initialize book icons
+        createBookIcons();
+
+        // Add interactive effects to form elements
+        document.querySelectorAll('.floating-input').forEach(input => {
+            if(input.value) {
+                input.nextElementSibling.classList.add('floating-label-active');
+            }
+
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('border-green-500');
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('border-green-500');
+            });
+        });
+
+        // Add hover effect to forgot card
+        const forgotCard = document.querySelector('.forgot-card');
+        // if (forgotCard) {
+        //     forgotCard.addEventListener('mousemove', (e) => {
+        //         const rect = forgotCard.getBoundingClientRect();
+        //         const x = e.clientX - rect.left;
+        //         const y = e.clientY - rect.top;
+
+        //         const centerX = rect.width / 2;
+        //         const centerY = rect.height / 2;
+
+        //         const angleY = (x - centerX) / 25;
+        //         const angleX = (centerY - y) / 25;
+
+        //         forgotCard.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg)`;
+        //     });
+
+        //     forgotCard.addEventListener('mouseleave', () => {
+        //         forgotCard.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+        //     });
+        // }
+    </script>
+</body>
+</html>

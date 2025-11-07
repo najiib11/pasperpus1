@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-white leading-tight">
-                {{ __('Daftar Peminjaman Buku') }}
+                {{ __('Catatan Peminjaman') }}
             </h2>
             <div class="flex space-x-2">
-               
+
                 <a href="{{ route('peminjaman.create') }}"
                     class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm">
                     + Tambah Peminjaman
@@ -52,7 +52,6 @@
                     <h3 class="font-semibold text-lg text-center">Catatan Pengembalian</h3>
                 </div> --}}
             </div>
-        </div>
 
 
         <!-- Tabel: Dipinjam -->
@@ -221,13 +220,48 @@
     </div>
     </div>
 
+    @include('peminjaman.modal')
     <script>
-        // Function to toggle visibility of tables based on the status clicked
-        function toggleTable(status) {
-            const tables = ['dipinjam', 'reservasi', 'dikembalikan'];
-            tables.forEach(tableId => {
-                const table = document.getElementById(tableId);
-                table.classList.add('hidden');
+        // Kirim semua data peminjaman ke JS saat render
+        const peminjamans = @json($peminjamans);
+
+        function showDetail(id) {
+            const data = peminjamans.find(p => p.id === id);
+            if (!data) return alert('Data tidak ditemukan');
+
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+
+            // Update konten modal
+            content.innerHTML = `
+                <div class="space-y-2">
+                    <p><strong>Nama Peminjam:</strong> ${data.user?.name ?? '-'}</p>
+                    <p><strong>Judul Buku:</strong> ${data.buku?.judul ?? '-'}</p>
+                    <p><strong>Jumlah:</strong> ${data.jumlah}</p>
+                    <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam ?? '-'}</p>
+                    <p><strong>Status:</strong> ${data.status}</p>
+                    <p><strong>Denda:</strong> Rp${Number(data.denda).toLocaleString('id-ID')}</p>
+                </div>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <button id="btnCloseModal" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">
+                        Tutup
+                    </button>
+
+                    <form id="returnForm" method="POST" action="/peminjaman/kembalikan/${data.id}" class="inline">
+                        @csrf
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                            Konfirmasi Pengembalian
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+
+            // Close modal
+            document.getElementById('btnCloseModal').addEventListener('click', () => {
+                modal.classList.add('hidden');
             });
 
             const tableToShow = document.getElementById(status);
@@ -396,6 +430,11 @@
                     row.style.display = text.includes(keyword) ? "" : "none";
                 });
             });
+        }
+
+        document.getElementById('btnCloseModal').addEventListener('click', function () {
+            document.getElementById('detailModal').classList.add('hidden');
         });
     </script>
 </x-app-layout>
+
