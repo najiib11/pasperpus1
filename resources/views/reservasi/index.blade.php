@@ -25,7 +25,7 @@
                             <th class="border px-4 py-2">Nama Peminjam</th>
                             <th class="border px-4 py-2">Judul Buku</th>
                             <th class="border px-4 py-2">Jumlah</th>
-                            <th class="border px-4 py-2">Tanggal Pinjam</th>
+                            <th class="border px-4 py-2">Tanggal Reservasi</th>
                             <th class="border px-4 py-2">Denda</th>
                             <th class="border px-4 py-2">Aksi</th>
                         </tr>
@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    @include('peminjaman.modal') {{-- pastikan modal ada id="detailModal" dan btnCloseModal --}}
+    @include('reservasi.modal') {{-- pastikan modal ada id="detailModal" dan btnCloseModal --}}
 
     @push('scripts')
     <script>
@@ -77,12 +77,12 @@
             const content = document.getElementById('modalContent');
 
             // Update konten modal
-            content.innerHTML = `
+           content.innerHTML = `
                 <div class="space-y-2">
                     <p><strong>Nama Peminjam:</strong> ${data.user?.name ?? '-'}</p>
                     <p><strong>Judul Buku:</strong> ${data.buku?.judul ?? '-'}</p>
                     <p><strong>Jumlah:</strong> ${data.jumlah}</p>
-                    <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam ?? '-'}</p>
+                    <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam ? new Date(data.tanggal_pinjam).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}</p>
                     <p><strong>Status:</strong> ${data.status}</p>
                     <p><strong>Denda:</strong> Rp${Number(data.denda).toLocaleString('id-ID')}</p>
                 </div>
@@ -92,14 +92,15 @@
                         Tutup
                     </button>
 
-                    <form id="returnForm" method="POST" action="/peminjaman/kembalikan/${data.id}" class="inline">
+                    <form id="returnForm" method="POST" action="/reservasi-admin/konfirmasi/${data.id}" class="inline">
                         @csrf
                         <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                            Konfirmasi Peminjaman
+                            Konfirmasi Reservasi
                         </button>
                     </form>
                 </div>
             `;
+
 
             modal.classList.remove('hidden');
 
@@ -113,7 +114,7 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault(); // stop default submit
                 Swal.fire({
-                    title: 'Konfirmasi Peminjaman?',
+                    title: 'Konfirmasi Reservasi?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Ya',
@@ -129,14 +130,14 @@
 
         function confirmReturn(id) {
             Swal.fire({
-                title: 'Konfirmasi Pengembalian?',
+                title: 'Konfirmasi asmdasmkdknaji?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya',
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/peminjaman/kembalikan/${id}`, {
+                    fetch(`/reservasi-admin/konfirmasi/${id}`, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -147,7 +148,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
-                            text: response.message ?? 'Berhasil mengembalikan buku',
+                            text: 'Reservasi buku berhasil disetujui',
                         }).then(() => location.reload());
                     })
                     .catch(err => {
@@ -167,4 +168,5 @@
         });
     </script>
     @endpush
+
 </x-app-layout>

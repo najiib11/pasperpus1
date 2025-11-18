@@ -28,6 +28,7 @@ Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 Route::get('/buku-tamu', [BukuController::class, 'tamu'])->name('buku.tamu');
+Route::get('/buku/search', [App\Http\Controllers\BukuController::class, 'search'])->name('buku.search');
 // ===========================
 // ROUTE DENGAN MIDDLEWARE AUTH
 // ===========================
@@ -79,7 +80,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/pengembalian', [PeminjamanController::class, 'pengembalianIndex'])->name('pengembalian.index');
 
 
-
     /*
     |------------------------------
     | RESERVASI
@@ -87,7 +87,8 @@ Route::middleware('auth')->group(function () {
     */
     Route::get('/reservasi', [ReservasiController::class, 'index'])->name('reservasi.index');
     Route::post('/reservasi/konfirmasi/{bukuId}', [PeminjamanController::class, 'reservasi'])
-        ->name('reservasi.konfirmasi');
+    ->name('reservasi.konfirmasi');
+    Route::post('/reservasi-admin/konfirmasi/{bukuId}', [PeminjamanController::class, 'konfirmasiReservasi'])->name('reservasi.admin.konfirmasi');
 });
 
 // ===========================

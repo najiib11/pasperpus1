@@ -14,7 +14,9 @@ class PeminjamanController extends Controller
 {
     public function index()
     {
-        $peminjamans = Peminjaman::with(['user', 'buku'])->get();
+        $peminjamans = Peminjaman::with(['user', 'buku'])
+        ->where('status', 'dipinjam ')
+        ->get();
 
         // Kelompokkan reservasi per buku
         $reservasiGrouped = $peminjamans
@@ -262,6 +264,8 @@ class PeminjamanController extends Controller
         $request->validate([
             'tanggal_pinjam' => 'required|date|after_or_equal:today',
         ]);
+        $buku = Buku::findOrFail($bukuId);
+
 
         // Hitung tanggal tenggat (7 hari setelah tanggal_pinjam)
         $tanggalTenggat = Carbon::parse($request->tanggal_pinjam)->addDays(7);
@@ -279,6 +283,37 @@ class PeminjamanController extends Controller
         return in_array(Auth::user()->id_role, [1, 2])
             ? redirect()->route('peminjaman.index')->with('success', 'Reservasi berhasil dibuat!')
             : redirect()->route('buku.index')->with('success', 'Reservasi berhasil dibuat!');
+    }
+
+    public function konfirmasiReservasi($id)
+    {
+        // Ambil data peminjaman berdasarkan ID
+        $peminjaman = Peminjaman::findOrFail($id);
+
+        // Pastikan status saat ini masih 'reservasi'
+        if ($peminjaman->status !== 'reservasi') {
+            return back()->with('error', 'Hanya reservasi yang bisa dikonfirmasi.');
+        }
+
+        // Ambil data buku yang bersangkutan
+        $buku = Buku::findOrFail($peminjaman->buku_id);
+
+        // Cek apakah stok buku masih tersedia
+        if ($buku->stok <= 0) {
+            return back()->with('error', 'Stok buku tidak tersedia untuk dipinjam.');
+        }
+
+        // Ubah status peminjaman menjadi 'dipinjam'
+        $peminjaman->update([
+            'status' => 'dipinjam',
+            'tanggal_pinjam' => now(),
+            'tenggat' => now()->addDays(7),
+        ]);
+
+        // Kurangi stok buku setelah konfirmasi berhasil
+        $buku->decrement('stok', 1);
+
+        return back()->with('success', 'Reservasi berhasil dikonfirmasi menjadi peminjaman!');
     }
     public function kelolaDenda()
     {

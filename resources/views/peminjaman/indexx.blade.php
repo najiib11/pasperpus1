@@ -45,8 +45,8 @@
                     <span class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Reservasi</span>
                 @endif
             </td>
-            <td class="px-4 py-3 text-center">{{ $peminjaman->tanggal_pinjam ?? '-' }}</td>
-            <td class="px-4 py-3 text-center">{{ $peminjaman->tenggat ?? '-' }}</td>
+            <td class="px-4 py-3 text-center">{{ $peminjaman->tanggal_pinjam ? \Carbon\Carbon::parse($peminjaman->tanggal_pinjam)->format('d-m-Y') : '-' }}</td>
+            <td class="px-4 py-3 text-center">{{ $peminjaman->tanggal_pinjam ? \Carbon\Carbon::parse($peminjaman->tenggat)->format('d-m-Y') : '-' }}</td>
             <td class="px-4 py-3 text-center">
                     <span class="text-red-600 font-bold">Rp{{ number_format($peminjaman->denda, 0, ',', '.') }}</span>
             </td>
@@ -66,15 +66,7 @@
                                 Kembalikan
                             </button>
                         </form>
-                    @endif
-
-                    <form action="{{ route('peminjaman.destroy', $peminjaman->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg">
-                            Hapus
-                        </button>
-                    </form>
+                    @endif  
                 </div>
             </td>
         </tr>

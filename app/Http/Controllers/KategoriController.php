@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
 use App\Models\Kategori;
 
@@ -71,12 +72,17 @@ class KategoriController extends Controller
     {
           $request->validate([
             'nama' => 'required|string|max:255',
-            'kode' => 'required|string|max:50|unique:kategoris,kode',
+            // 'kode' => 'required|string|max:50|unique:kategoris,kode',
         ]);
         $kategori = Kategori::findOrFail($id);
-        $kategori->update([
-            'nama' => $request->nama,
-        ]);
+        try{
+            $kategori->update([
+                'nama' => $request->nama,
+            ]);
+
+        }catch(Exception $e){
+            
+        }
 
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui.');
     }

@@ -15,12 +15,20 @@
     </x-slot>
 
     <div class="py-10">
-        <div class="max-w-md mx-auto">
-            <div class="bg-white shadow-lg rounded-lg border overflow-hidden">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white shadow-lg rounded-lg border overflow-hidden w-full">
                 <!-- Header kartu -->
-                <div class="bg-blue-600 text-white p-4 text-center">
-                    <h1 class="text-lg font-bold">KARTU ANGGOTA PERPUSTAKAAN</h1>
-                    <p class="text-sm">SMKS PASUNDAN 1 CIANJUR</p>
+                <div class="bg-blue-600 text-white px-4 flex flex-row items-center justify-between">
+                    <div>
+                        <img src="{{ asset('assets/images/ps.png') }}" class="size-[9rem] max-w-[10rem] min-w-[10rem] object-contain max-w-[10rem] scale-110" alt="">
+                    </div>
+                    <div class="flex flex-col justify-center text-center">
+                        <h1 class="text-lg font-bold">KARTU ANGGOTA PERPUSTAKAAN</h1>
+                        <p class="text-sm">SMKS PASUNDAN 1 CIANJUR</p>
+                    </div>
+                    <div>
+                        <img src="{{ asset('assets/images/tut-wuri.png') }}" class="size-[6rem] min-w-[10rem] object-contain max-w-[10rem] " alt="">
+                    </div>
                 </div>
 
                 <!-- Isi kartu -->

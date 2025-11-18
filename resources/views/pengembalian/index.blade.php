@@ -26,6 +26,7 @@
                             <th class="border px-4 py-2">Judul Buku</th>
                             <th class="border px-4 py-2">Jumlah</th>
                             <th class="border px-4 py-2">Tanggal Pinjam</th>
+                            <th class="border px-4 py-2">Tanggal Pengembalian</th>
                             <th class="border px-4 py-2">Denda</th>
                             <th class="border px-4 py-2">Aksi</th>
                         </tr>
@@ -38,6 +39,7 @@
                             <td class="border px-4 py-2">{{ $p->buku->judul ?? '-' }}</td>
                             <td class="border px-4 py-2 text-center">{{ $p->jumlah }}</td>
                             <td class="border px-4 py-2 text-center">{{ \Carbon\Carbon::parse($p->tanggal_pinjam)->format('d-m-Y') }}</td>
+                            <td class="border px-4 py-2 text-center">{{ \Carbon\Carbon::parse($p->tanggal_kembali)->format('d-m-Y') }}</td>
                             <td class="border px-4 py-2 text-center text-red-600 font-bold">
                                 Rp{{ number_format($p->denda, 0, ',', '.') }}
                             </td>

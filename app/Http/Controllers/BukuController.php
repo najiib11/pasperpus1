@@ -179,10 +179,42 @@ class BukuController extends Controller
         $buku->delete();
         return redirect()->route('buku.index')->with('success', 'Buku berhasil dihapus.');
     }
-    public function tamu()
+ public function tamu(Request $request)
     {
-        $kategoris = \App\Models\Kategori::with('buku')->get();
+        $search = $request->get('search');
 
-        return view('buku.tamu', compact('kategoris'));
+        if ($search) {
+            // Jika ada pencarian, ambil buku berdasarkan pencarian
+            $bukuResults = Buku::where('judul', 'like', '%' . $search . '%')
+                ->orWhere('penulis', 'like', '%' . $search . '%')
+                ->orWhere('penerbit', 'like', '%' . $search . '%')
+                ->orWhereHas('kategori', function($query) use ($search) {
+                    $query->where('nama', 'like', '%' . $search . '%');
+                })
+                ->with('kategori')
+                ->get()
+                ->groupBy('kategori_id');
+
+            $kategoris = Kategori::with('buku')
+                ->whereHas('buku', function($query) use ($search) {
+                    $query->where('judul', 'like', '%' . $search . '%')
+                          ->orWhere('penulis', 'like', '%' . $search . '%')
+                          ->orWhere('penerbit', 'like', '%' . $search . '%');
+                })
+                ->get();
+
+            return view('buku.tamu', compact('kategoris', 'search', 'bukuResults'));
+        }
+
+        // Jika tidak ada pencarian, tampilkan semua
+        $kategoris = Kategori::with('buku')->get();
+        $bukuResults = collect();
+
+        return view('buku.tamu', compact('kategoris', 'search', 'bukuResults'));
+    }
+
+    public function search(Request $request)
+    {
+        return $this->tamu($request);
     }
 }
