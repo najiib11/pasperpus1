@@ -60,13 +60,13 @@
                     --}}
 
                     @if($peminjaman->status === 'dipinjam')
-                        <form action="{{ route('peminjaman.anggota', $peminjaman->id) }}" method="POST" onsubmit="return confirm('Kembalikan buku ini?')">
+                        <form action="{{ route('peminjaman.kembalikan', $peminjaman->id) }}" method="POST" onsubmit="return confirm('Kembalikan buku ini?')">
                             @csrf
                             <button type="submit" class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg">
                                 Kembalikan
                             </button>
                         </form>
-                    @endif  
+                    @endif
                 </div>
             </td>
         </tr>

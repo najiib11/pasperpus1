@@ -1,71 +1,75 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- ✅ SweetAlert2 -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 flex">
-            <!-- Sidebar -->
-            <div class="fixed top-0 left-0 h-full w-64 bg-white shadow-md z-10">
-                @include('layouts.navigation')
-            </div>
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-            <!-- Main Content -->
-            <div class="flex flex-col w-full ml-64">
-                <!-- Page Heading -->
-                @isset($header)
-                    <header class="bg-blue-400 shadow">
-                        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
-                @endisset
+    <!-- ✅ SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
 
-                <!-- Page Content -->
-                <main>
-                    {{ $slot }}
-                </main>
-            </div>
+<body class="font-sans antialiased">
+    <div class="min-h-screen bg-gray-100 flex">
+        <!-- Sidebar -->
+        <div class="fixed top-0 left-0 h-full w-64 bg-white shadow-md z-10">
+            @include('layouts.navigation')
         </div>
 
+        <!-- Main Content -->
+        <div class="flex flex-col w-full ml-64">
+            <!-- Page Heading -->
+            @isset($header)
+                <header class="bg-blue-400 shadow">
+                    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
 
-        {{-- ✅ SweetAlert Auto Trigger untuk session flash --}}
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                @if (session('success'))
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: "{{ session('success') }}",
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-                @endif
+            <!-- Page Content -->
+            <main>
+                {{ $slot }}
+            </main>
+        </div>
+    </div>
 
-                @if (session('error'))
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: "{{ session('error') }}",
-                        showConfirmButton: true
-                    });
-                @endif
-            });
-        </script>
-        @stack('scripts')
-    </body>
+
+    {{-- ✅ SweetAlert Auto Trigger untuk session flash --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: {!! json_encode(session('success')) !!},
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: {!! json_encode(session('error')) !!},
+                    showConfirmButton: true
+                });
+            @endif
+    });
+    </script>
+
+    @stack('scripts')
+</body>
+
 </html>

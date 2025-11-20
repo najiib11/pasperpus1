@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,8 +52,15 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
         }
 
         .forgot-card {
@@ -90,8 +98,8 @@
             transition: all 0.2s ease;
         }
 
-        .floating-input:focus + .floating-label,
-        .floating-input:not(:placeholder-shown) + .floating-label {
+        .floating-input:focus+.floating-label,
+        .floating-input:not(:placeholder-shown)+.floating-label {
             top: -10px;
             left: 10px;
             font-size: 0.75rem;
@@ -119,8 +127,13 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
+            0% {
+                background-position: 0% center;
+            }
+
+            100% {
+                background-position: 200% center;
+            }
         }
 
         .pulse-glow {
@@ -128,8 +141,13 @@
         }
 
         @keyframes pulse-glow {
-            0% { box-shadow: 0 0 20px rgba(139, 90, 43, 0.1); }
-            100% { box-shadow: 0 0 30px rgba(74, 124, 89, 0.2); }
+            0% {
+                box-shadow: 0 0 20px rgba(139, 90, 43, 0.1);
+            }
+
+            100% {
+                box-shadow: 0 0 30px rgba(74, 124, 89, 0.2);
+            }
         }
 
         .book-animation {
@@ -138,8 +156,13 @@
         }
 
         @keyframes book-open {
-            0% { transform: perspective(400px) rotateY(0deg); }
-            100% { transform: perspective(400px) rotateY(-15deg); }
+            0% {
+                transform: perspective(400px) rotateY(0deg);
+            }
+
+            100% {
+                transform: perspective(400px) rotateY(-15deg);
+            }
         }
 
         .key-animation {
@@ -147,11 +170,19 @@
         }
 
         @keyframes key-float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-10px) rotate(5deg);
+            }
         }
     </style>
 </head>
+
 <body class="py-8 px-4 text-gray-800">
     <!-- Background Book Icons -->
     <div class="book-icons" id="bookIcons"></div>
@@ -159,10 +190,10 @@
     <div class="max-w-md w-full mx-auto relative z-10">
         <!-- Session Status -->
         @if (session('status'))
-        <div class="session-status mb-6 p-4 rounded-lg text-green-700">
-            <i class="fas fa-check-circle mr-2"></i>
-            <span>{{ session('status') }}</span>
-        </div>
+            <div class="session-status mb-6 p-4 rounded-lg text-green-700">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span>{{ session('status') }}</span>
+            </div>
         @endif
 
         <div class="forgot-card rounded-2xl p-8 w-full pulse-glow">
@@ -175,24 +206,21 @@
                 </div>
                 <h1 class="title-font text-3xl font-bold mb-2 magic-text">Lupa Kata Sandi?</h1>
                 <p class="text-amber-700 mb-6">
-                    Jangan khawatir! Masukkan email Anda dan kami akan mengirimkan link untuk mengatur ulang kata sandi Anda.
+                    Masukkan email Anda. Jika email terdaftar, Anda akan diarahkan untuk mengubah kata sandi secara
+                    langsung.
                 </p>
+
             </div>
 
-            <form method="POST" action="{{ route('password.email') }}">
+            <form method="POST" action="{{ route('password.check') }}">
+
                 @csrf
 
                 <!-- Email Address -->
                 <div class="relative mb-6">
-                    <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        required autofocus
+                    <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
                         placeholder=" "
-                        class="floating-input input-field w-full px-4 py-3 rounded-lg focus:outline-none text-gray-800 placeholder-transparent"
-                    >
+                        class="floating-input input-field w-full px-4 py-3 rounded-lg focus:outline-none text-gray-800 placeholder-transparent">
                     <label for="email" class="floating-label absolute left-4 top-3 text-amber-700 pointer-events-none">
                         <i class="fas fa-envelope mr-2"></i>Alamat Email
                     </label>
@@ -209,7 +237,8 @@
                 <div class="text-center">
                     <p class="text-amber-700">
                         Ingat kata sandi Anda?
-                        <a href="{{ route('login') }}" class="text-amber-700 hover:text-amber-900 font-medium transition-colors">Masuk di sini</a>
+                        <a href="{{ route('login') }}"
+                            class="text-amber-700 hover:text-amber-900 font-medium transition-colors">Masuk di sini</a>
                     </p>
                 </div>
             </form>
@@ -252,15 +281,15 @@
 
         // Add interactive effects to form elements
         document.querySelectorAll('.floating-input').forEach(input => {
-            if(input.value) {
+            if (input.value) {
                 input.nextElementSibling.classList.add('floating-label-active');
             }
 
-            input.addEventListener('focus', function() {
+            input.addEventListener('focus', function () {
                 this.parentElement.classList.add('border-green-500');
             });
 
-            input.addEventListener('blur', function() {
+            input.addEventListener('blur', function () {
                 this.parentElement.classList.remove('border-green-500');
             });
         });
@@ -288,4 +317,5 @@
         // }
     </script>
 </body>
+
 </html>

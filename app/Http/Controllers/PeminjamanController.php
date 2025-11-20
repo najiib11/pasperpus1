@@ -240,6 +240,7 @@ class PeminjamanController extends Controller
         }
 
         $peminjaman->status = 'dikembalikan';
+        $peminjaman->tanggal_kembali = now();
         $peminjaman->save();
 
         $peminjaman->buku->increment('stok', $peminjaman->jumlah);

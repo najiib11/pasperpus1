@@ -59,4 +59,9 @@ class User extends Authenticatable
         }
         return $this->role === $role;
     }
+    public function siswa()
+    {
+        return $this->hasOne(Siswa::class);
+    }
+
 }

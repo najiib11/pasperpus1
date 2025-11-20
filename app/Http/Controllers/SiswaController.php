@@ -191,4 +191,6 @@ class SiswaController extends Controller
 
         return $pdf->download('kartu_'.$siswa->nisn.'.pdf');
     }
+
+    
 }
