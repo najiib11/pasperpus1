@@ -83,6 +83,15 @@
                 const content = document.getElementById("reservasiContent");
                 const form = document.getElementById("reservasiKofirmasiForm");
 
+                function formatTanggal(tanggal) {
+                    const date = new Date(tanggal);
+                    const d = String(date.getDate()).padStart(2, '0');
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const y = date.getFullYear(); // kalau mau 2 digit → y.toString().slice(2)
+                    return `${d}-${m}-${y}`;
+                }
+
+
                 // Set form action POST untuk konfirmasi
                 form.action = `/reservasi-admin/konfirmasi/${data.id}`;
 
@@ -91,7 +100,7 @@
                 <p><strong>Nama Peminjam:</strong> ${data.user?.name ?? '-'}</p>
                 <p><strong>Judul Buku:</strong> ${data.buku?.judul ?? '-'}</p>
                 <p><strong>Jumlah:</strong> ${data.jumlah}</p>
-                <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam}</p>
+                  <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam ? formatTanggal(data.tanggal_pinjam) : '-'}</p>
                 <p><strong>Status:</strong> ${data.status}</p>
                 <p><strong>Denda:</strong> Rp${Number(data.denda).toLocaleString('id-ID')}</p>
             `;

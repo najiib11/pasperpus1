@@ -193,23 +193,33 @@ class PeminjamanController extends Controller
             'tenggat' => 'nullable|date',
             'status' => 'required|in:dipinjam,dikembalikan,reservasi',
         ]);
-
+    
         $data = $request->all();
-
-        // Tambah tanggal kembali kalau status dikembalikan
+    
+        // Tambah tanggal kembali
         if ($data['status'] === 'dikembalikan' && $peminjaman->tanggal_kembali === null) {
             $data['tanggal_kembali'] = now();
         }
-
-        // Pastikan tanggal pinjam terisi jika status dipinjam
+    
+        // Isi tanggal pinjam kalau dipinjam
         if ($data['status'] === 'dipinjam' && empty($data['tanggal_pinjam'])) {
             $data['tanggal_pinjam'] = now();
         }
-
+    
+        $statusSebelumnya = $peminjaman->status;
+        
         $peminjaman->update($data);
-
-        return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil diperbarui.');
+    
+        // === Tambah stok buku saat dikembalikan ===
+        if ($statusSebelumnya !== 'dikembalikan' && $data['status'] === 'dikembalikan') {
+            $buku = Buku::find($peminjaman->buku_id);
+            $buku->stok += $peminjaman->jumlah;
+            $buku->save();
+        }
+    
+        return redirect()->route('pengembalian.index')->with('success', 'Data peminjaman berhasil diperbarui.');
     }
+    
 
     public function destroy(Peminjaman $peminjaman)
     {

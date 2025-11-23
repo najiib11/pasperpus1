@@ -25,43 +25,58 @@
                     @csrf
                     @method('PUT')
 
+                    {{-- Nama Peminjam (readonly) --}}
                     <div class="mb-4">
                         <label class="block font-medium">Nama Peminjam</label>
                         <input type="text" value="{{ $peminjaman->user->name }}" class="w-full border rounded p-2 bg-gray-100" readonly>
                         <input type="hidden" name="user_id" value="{{ $peminjaman->user_id }}">
                     </div>
 
+                    {{-- Judul Buku (readonly, disabled + hidden agar tetap dikirim) --}}
                     <div class="mb-4">
                         <label class="block font-medium">Judul Buku</label>
-                        <select name="buku_id" class="w-full border rounded p-2">
+                        <select class="w-full border rounded p-2 bg-gray-100" disabled>
                             @foreach($buku as $b)
                                 <option value="{{ $b->id }}" {{ $peminjaman->buku_id == $b->id ? 'selected' : '' }}>
                                     {{ $b->judul }}
                                 </option>
                             @endforeach
                         </select>
+                        <input type="hidden" name="buku_id" value="{{ $peminjaman->buku_id }}">
                     </div>
 
+                    {{-- Jumlah Buku (readonly) --}}
                     <div class="mb-4">
                         <label class="block font-medium">Jumlah Buku</label>
-                        <input type="number" name="jumlah" min="1" class="w-full border rounded p-2" value="{{ $peminjaman->jumlah }}" required>
+                        <input type="number" class="w-full border rounded p-2 bg-gray-100" value="{{ $peminjaman->jumlah }}" readonly>
+                        <input type="hidden" name="jumlah" value="{{ $peminjaman->jumlah }}">
                     </div>
 
                     <div class="mb-4">
                         <label class="block font-medium">Tanggal Pinjam</label>
-                        <input type="date" name="tanggal_pinjam" value="{{ $peminjaman->tanggal_pinjam }}" class="w-full border rounded p-2">
+                        <input type="date"
+                               class="w-full border rounded p-2 bg-gray-100"
+                               value="{{ \Carbon\Carbon::parse($peminjaman->tanggal_pinjam)->format('Y-m-d') }}"
+                               readonly>
+                        <input type="hidden" name="tanggal_pinjam" value="{{ $peminjaman->tanggal_pinjam }}">
                     </div>
-
+                    
                     <div class="mb-4">
                         <label class="block font-medium">Tenggat</label>
-                        <input type="date" name="tenggat" value="{{ $peminjaman->tenggat }}" class="w-full border rounded p-2">
+                        <input type="date"
+                               class="w-full border rounded p-2 bg-gray-100"
+                               value="{{ \Carbon\Carbon::parse($peminjaman->tenggat)->format('Y-m-d') }}"
+                               readonly>
+                        <input type="hidden" name="tenggat" value="{{ $peminjaman->tenggat }}">
                     </div>
+                    
 
+                    {{-- HANYA STATUS YANG BISA DI EDIT --}}
                     <div class="mb-4">
                         <label class="block font-medium">Status</label>
                         <select name="status" class="w-full border rounded p-2">
                             <option value="dipinjam" {{ $peminjaman->status == 'dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                            <option value="reservasi" {{ $peminjaman->status == 'reservasi' ? 'selected' : '' }}>Reservasi</option>
+                            <option value="dikembalikan" {{ $peminjaman->status == 'dikembalikan' ? 'selected' : '' }}>Di Kembalikan</option>
                         </select>
                     </div>
 
@@ -73,19 +88,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const statusSelect = document.querySelector('select[name="status"]');
-            const tanggalPinjamInput = document.querySelector('input[name="tanggal_pinjam"]');
-
-            statusSelect.addEventListener('change', function () {
-                if (this.value === 'dipinjam') {
-                    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-                    tanggalPinjamInput.value = today;
-                }
-            });
-        });
-    </script>
 
 </x-app-layout>
