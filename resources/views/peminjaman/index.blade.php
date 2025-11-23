@@ -99,20 +99,35 @@
             const modal = document.getElementById('peminjamanModal');
             const content = document.getElementById('peminjamanContent');
 
-            content.innerHTML = `
-            <div class="space-y-2">
-                <p><strong>Nama Peminjam:</strong> ${data.user?.name ?? '-'}</p>
-                <p><strong>Judul Buku:</strong> ${data.buku?.judul ?? '-'}</p>
-                <p><strong>Jumlah:</strong> ${data.jumlah}</p>
-                <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam}</p>
-                <p><strong>Status:</strong> ${data.status}</p>
-                <p><strong>Denda:</strong> Rp${Number(data.denda).toLocaleString('id-ID')}</p>
-            </div>
-        `;
+            function formatTanggal(tanggal) {
+                const date = new Date(tanggal);
+                const d = String(date.getDate()).padStart(2, '0');
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const y = date.getFullYear();
+                return `${d}-${m}-${y}`;
+            }
 
-            // tombol submit kembalikan
-            document.getElementById('pengembalianForm').action =
-                `/peminjaman/kembalikan/${data.id}`;
+            content.innerHTML = `
+                <div class="space-y-2">
+                    <p><strong>Nama Peminjam:</strong> ${data.user?.name ?? '-'}</p>
+                    <p><strong>Judul Buku:</strong> ${data.buku?.judul ?? '-'}</p>
+                    <p><strong>Jumlah:</strong> ${data.jumlah}</p>
+                    <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam ? formatTanggal(data.tanggal_pinjam) : '-'}</p>
+                    <p><strong>Status:</strong> ${data.status}</p>
+                    <p><strong>Denda:</strong> Rp${Number(data.denda).toLocaleString('id-ID')}</p>
+                </div>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <a href="/peminjaman/${data.id}/edit"
+                    class="bg-yellow-500 text-white px-4 py-2 rounded">
+                        Edit
+                    </a>
+                    
+                    <button id="btnCloseModal" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">
+                        Tutup
+                    </button>
+                </div>
+            `;
 
             modal.classList.remove('hidden');
         }

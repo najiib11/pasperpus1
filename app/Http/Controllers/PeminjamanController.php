@@ -208,7 +208,7 @@ class PeminjamanController extends Controller
 
         $peminjaman->update($data);
 
-        return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil diperbarui.');
+        return redirect()->route('pengembalian.index')->with('success', 'Data peminjaman berhasil diperbarui.');
     }
 
     public function destroy(Peminjaman $peminjaman)

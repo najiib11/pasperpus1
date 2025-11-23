@@ -3,18 +3,5 @@
         <h2 class="text-xl font-semibold mb-4 text-center">Detail Peminjaman</h2>
 
         <div id="peminjamanContent" class="mb-6"></div>
-
-        <div class="flex justify-end gap-2">
-            <button id="closePeminjamanModal" class="bg-gray-400 text-white px-4 py-2 rounded">
-                Tutup
-            </button>
-
-            <form id="pengembalianForm" method="POST">
-                @csrf
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
-                    Kembalikan Buku
-                </button>
-            </form>
-        </div>
     </div>
 </div>
