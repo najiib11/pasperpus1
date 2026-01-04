@@ -26,7 +26,7 @@
                         <th class="px-4 py-3 text-center text-sm font-semibold">Tanggal Pinjam</th>
                         <th class="px-4 py-3 text-center text-sm font-semibold">Tenggat</th>
                         <th class="px-4 py-3 text-center text-sm font-semibold">Denda</th>
-                        <th class="px-4 py-3 text-center text-sm font-semibold">Aksi</th>
+                        {{-- <th class="px-4 py-3 text-center text-sm font-semibold">Aksi</th> --}}
                     </tr>
                 </thead>
            <tbody class="divide-y divide-gray-200 text-gray-700">
@@ -50,8 +50,8 @@
             <td class="px-4 py-3 text-center">
                     <span class="text-red-600 font-bold">Rp{{ number_format($peminjaman->denda, 0, ',', '.') }}</span>
             </td>
-            <td class="px-4 py-3 text-center">
-                <div class="flex justify-center gap-2">
+            {{-- <td class="px-4 py-3 text-center">
+                <div class="flex justify-center gap-2"> --}}
                     {{-- Tombol Edit (jika diperlukan)
                     <a href="{{ route('peminjaman.edit', $peminjaman->id) }}"
                         class="px-3 py-1 bg-yellow-400 hover:bg-yellow-500 text-white text-xs rounded-lg">
@@ -59,16 +59,16 @@
                     </a>
                     --}}
 
-                    @if($peminjaman->status === 'dipinjam')
+                    {{-- @if($peminjaman->status === 'dipinjam')
                         <form action="{{ route('peminjaman.kembalikan', $peminjaman->id) }}" method="POST" onsubmit="return confirm('Kembalikan buku ini?')">
                             @csrf
                             <button type="submit" class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg">
                                 Kembalikan
                             </button>
                         </form>
-                    @endif
-                </div>
-            </td>
+                    @endif --}}
+                {{-- </div>
+            </td> --}}
         </tr>
     @empty
         <tr>

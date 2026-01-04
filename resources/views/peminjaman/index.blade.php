@@ -122,7 +122,7 @@
                     class="bg-yellow-500 text-white px-4 py-2 rounded">
                         Edit
                     </a>
-                    
+
                     <button id="btnCloseModal" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">
                         Tutup
                     </button>

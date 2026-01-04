@@ -62,59 +62,71 @@
         </div>
     </div>
 
-    @include('peminjaman.modal')
-    <script>
-        // Kirim semua data peminjaman ke JS saat render
-        const peminjamans = @json($peminjamans);
+    @include('pengembalian.modal')
+   <script>
+    // Kirim semua data peminjaman ke JS saat render
+    const peminjamans = @json($peminjamans);
 
-        function showDetail(id) {
-            // Cari peminjaman berdasarkan id
-            const data = peminjamans.find(p => p.id === id);
+    function formatTanggal(tanggal) {
+        const date = new Date(tanggal);
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}-${m}-${y}`;
+    }
 
-            if (!data) {
-                alert('Data tidak ditemukan');
-                return;
-            }
+    // Dibuat global supaya bisa dipanggil dari tombol *Detail*
+    function showDetail(id) {
+        // Cari peminjaman berdasarkan id
+        const data = peminjamans.find(p => p.id === id);
 
-            const modal = document.getElementById('detailModal');
-            const content = document.getElementById('modalContent');
-
-            function formatTanggal(tanggal) {
-                const date = new Date(tanggal);
-                const d = String(date.getDate()).padStart(2, '0');
-                const m = String(date.getMonth() + 1).padStart(2, '0');
-                const y = date.getFullYear(); // kalau mau 2 digit → y.toString().slice(2)
-                return `${d}-${m}-${y}`;
-            }
-
-
-            content.innerHTML = `
-                <div class="space-y-2">
-                    <p><strong>Nama Peminjam:</strong> ${data.user?.name ?? '-'}</p>
-                    <p><strong>Judul Buku:</strong> ${data.buku?.judul ?? '-'}</p>
-                    <p><strong>Jumlah:</strong> ${data.jumlah}</p>
-                    <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam ? formatTanggal(data.tanggal_pinjam) : '-'}</p>
-                    <p><strong>Status:</strong> ${data.status}</p>
-                    <p><strong>Denda:</strong> Rp${Number(data.denda).toLocaleString('id-ID')}</p>
-                </div>
-                <div class="mt-4 flex justify-end gap-2">
-                    <button id="btnCloseModal" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">
-                        Tutup
-                    </button>
-                </div>
-            `;
-
-            modal.classList.remove('hidden');
-
-            // Close modal
-            document.getElementById('btnCloseModal').addEventListener('click', () => {
-                modal.classList.add('hidden');
-            });
-
+        if (!data) {
+            alert('Data tidak ditemukan');
+            return;
         }
 
-        document.getElementById('btnCloseModal').addEventListener('click', function () {
-            document.getElementById('detailModal').classList.add('hidden');
-        });
-    </script>
+        const modal   = document.getElementById('pengembalianModal');
+        const content = document.getElementById('modalContent');
+
+        // Cek dulu, biar tidak null
+        if (!modal || !content) {
+            console.error('Elemen dengan id "pengembalianModal" atau "modalContent" tidak ditemukan di HTML.');
+            return;
+        }
+
+        content.innerHTML = `
+            <div class="space-y-2">
+                <p><strong>Nama Peminjam:</strong> ${data.user?.name ?? '-'}</p>
+                <p><strong>Judul Buku:</strong> ${data.buku?.judul ?? '-'}</p>
+                <p><strong>Jumlah:</strong> ${data.jumlah}</p>
+                <p><strong>Tanggal Pinjam:</strong> ${data.tanggal_pinjam ? formatTanggal(data.tanggal_pinjam) : '-'}</p>
+                <p><strong>Status:</strong> ${data.status}</p>
+                <p><strong>Denda:</strong> Rp${Number(data.denda ?? 0).toLocaleString('id-ID')}</p>
+            </div>
+
+            <div class="mt-4 flex justify-end gap-2">
+                <button id="btnCloseModal" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">
+                    Tutup
+                </button>
+            </div>
+        `;
+
+        // Tampilkan modal
+        modal.classList.remove('hidden');
+
+        // Pasang *event listener* setelah tombol ada di DOM
+        const btnClose = document.getElementById('btnCloseModal');
+        if (btnClose) {
+            btnClose.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            }, { once: true }); // once: true biar tidak numpuk listener
+        }
+    }
+
+    // HAPUS / KOMENTARI BAGIAN INI KARENA BIKIN ERROR
+    // document.getElementById('btnCloseModal').addEventListener('click', function () {
+    //     document.getElementById('detailModal').classList.add('hidden');
+    // });
+</script>
+
 </x-app-layout>
