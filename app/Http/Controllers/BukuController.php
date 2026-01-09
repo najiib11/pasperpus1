@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log; // ✅ tambahkan ini
+use Barryvdh\DomPDF\Facade\Pdf; // <--- Tambahkan ini di atas
 
 class BukuController extends Controller
 {
@@ -216,5 +217,106 @@ class BukuController extends Controller
     public function search(Request $request)
     {
         return $this->tamu($request);
+    }
+
+    // ==========================================
+    // BAGIAN LAPORAN BUKU
+    // ==========================================
+
+    private function getFilteredBuku(Request $request)
+    {
+        $query = Buku::with('kategori');
+
+        // Filter Kategori
+        if ($request->filled('kategori_id') && $request->kategori_id != 'semua') {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+
+        // Filter Sumber Pengadaan
+        if ($request->filled('sumber_pengadaan') && $request->sumber_pengadaan != 'semua') {
+            $query->where('sumber_pengadaan', $request->sumber_pengadaan);
+        }
+
+        // Filter Tahun Terbit
+        if ($request->filled('tahun_terbit')) {
+            $query->where('tahun_terbit', $request->tahun_terbit);
+        }
+
+        return $query->orderBy('judul', 'asc')->get();
+    }
+
+    public function laporanBuku(Request $request)
+    {
+        $bukus = $this->getFilteredBuku($request);
+        $kategoris = Kategori::all(); // Untuk dropdown filter
+
+        return view('buku.laporan', compact('bukus', 'kategoris'));
+    }
+
+    public function downloadBuku(Request $request)
+    {
+        $data = $this->getFilteredBuku($request);
+        $jenis = $request->input('jenis');
+        $namaFile = 'Laporan_Data_Buku_' . date('d-m-Y');
+
+        // 1. PDF
+        if ($jenis == 'pdf') {
+            $pdf = Pdf::loadView('buku.pdf', ['bukus' => $data]);
+            // Set paper landscape karena kolomnya banyak
+            $pdf->setPaper('a4', 'landscape');
+            return $pdf->download($namaFile . '.pdf');
+        }
+
+        // 2. EXCEL (Native PHP)
+        elseif ($jenis == 'excel') {
+            $headers = [
+                "Content-Type" => "application/vnd.ms-excel",
+                "Content-Disposition" => "attachment; filename=\"$namaFile.xls\"",
+                "Pragma" => "no-cache",
+                "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+                "Expires" => "0"
+            ];
+
+            $callback = function() use($data) {
+                $file = fopen('php://output', 'w');
+
+                fwrite($file, '<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+                <head><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+                <style>table{border-collapse:collapse;} td,th{border:1px solid #000; padding:5px;}</style>
+                </head><body><table>');
+
+                // Judul Kolom
+                fwrite($file, '<thead><tr>
+                    <th style="background:#eee;">No</th>
+                    <th style="background:#eee;">Judul Buku</th>
+                    <th style="background:#eee;">Penulis</th>
+                    <th style="background:#eee;">Penerbit</th>
+                    <th style="background:#eee;">Tahun</th>
+                    <th style="background:#eee;">Kategori</th>
+                    <th style="background:#eee;">Sumber</th>
+                    <th style="background:#eee;">Stok</th>
+                </tr></thead><tbody>');
+
+                foreach ($data as $key => $row) {
+                    fwrite($file, '<tr>
+                        <td align="center">' . ($key + 1) . '</td>
+                        <td>' . $row->judul . '</td>
+                        <td>' . $row->penulis . '</td>
+                        <td>' . $row->penerbit . '</td>
+                        <td align="center">' . $row->tahun_terbit . '</td>
+                        <td>' . ($row->kategori->nama ?? '-') . '</td>
+                        <td>' . ucfirst($row->sumber_pengadaan) . '</td>
+                        <td align="center">' . $row->stok . '</td>
+                    </tr>');
+                }
+
+                fwrite($file, '</tbody></table></body></html>');
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return redirect()->back();
     }
 }
