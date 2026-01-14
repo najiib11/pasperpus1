@@ -9,7 +9,9 @@ use App\Http\Controllers\{
     SiswaController,
     ReservasiController,
     GuruController,
-    AuthController
+    AuthController,
+    DashboardController,
+    BukuRusakController
 };
 
 // ===========================
@@ -17,7 +19,7 @@ use App\Http\Controllers\{
 // ===========================
 Route::get('/', fn() => redirect()->route('login'));
 
-Route::get('/dashboard', fn() => view('dashboard'))
+Route::get('/dashboard', fn() => view('dashboardUser'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
@@ -83,10 +85,25 @@ Route::middleware('auth')->group(function () {
 // ROUTE PUSTAKAWAN
 // ===========================
 Route::middleware(['auth', 'role:pustakawan'])->group(function () {
+    Route::get('/dashboard-pustkawan', [DashboardController::class, 'index'])->name('dashboard.pustakawan');
 
     Route::resource('kategori', KategoriController::class);
     Route::resource('siswa', SiswaController::class);
     Route::resource('guru', GuruController::class);
+    Route::resource('buku-rusak', BukuRusakController::class)->except(['create', 'store']);
+    // Route Cetak Laporan
+    Route::get('/laporan-buku-rusak', [BukuRusakController::class, 'laporan'])->name('buku-rusak.laporan');
+    Route::get('/laporan-buku-rusak/download', [BukuRusakController::class, 'download'])->name('buku-rusak.download');
+    Route::get('/laporan-peminjaman', [PeminjamanController::class, 'laporan'])->name('peminjaman.laporan');
+    Route::get('/laporan-peminjaman/download', [PeminjamanController::class, 'download'])->name('peminjaman.download');
+    Route::get('/laporan-pengembalian', [PeminjamanController::class, 'laporanPengembalian'])->name('pengembalian.laporan');
+    Route::get('/laporan-pengembalian/download', [PeminjamanController::class, 'downloadPengembalian'])->name('pengembalian.download');
+    Route::get('/laporan-reservasi', [ReservasiController::class, 'laporanReservasi'])->name('reservasi.laporan');
+    Route::get('/laporan-reservasi/download', [ReservasiController::class, 'downloadReservasi'])->name('reservasi.download');
+    Route::get('/laporan-denda', [PeminjamanController::class, 'laporanDenda'])->name('denda.laporan');
+    Route::get('/laporan-denda/download', [PeminjamanController::class, 'downloadDenda'])->name('denda.download');
+    Route::get('/laporan-buku', [BukuController::class, 'laporanBuku'])->name('buku.laporan');
+    Route::get('/laporan-buku/download', [BukuController::class, 'downloadBuku'])->name('buku.download');
 });
 
 // CETAK SISWA

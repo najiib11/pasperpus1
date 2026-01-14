@@ -28,6 +28,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // --- MODIFIKASI DIMULAI DARI SINI ---
+
+        // Cek apakah user yang baru login punya role 'pustakawan'
+        if ($request->user()->hasRole('pustakawan')) {
+            // Jika ya, arahkan ke route dashboard khusus pustakawan
+            return redirect()->intended(route('dashboard-pustakawan', absolute: false));
+        }
+
+        // --- MODIFIKASI SELESAI ---
+
+        // Jika bukan pustakawan (misal: siswa/guru), arahkan ke dashboard biasa
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

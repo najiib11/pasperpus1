@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Peminjaman;
 use App\Models\Buku;
+use App\Models\BukuRusak;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\PeminjamanExport;      // <--- Wajib
+use Maatwebsite\Excel\Facades\Excel;   // <--- Wajib
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class PeminjamanController extends Controller
@@ -184,42 +188,75 @@ class PeminjamanController extends Controller
     }
 
     public function update(Request $request, Peminjaman $peminjaman)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'buku_id' => 'required|exists:buku,id',
-            'jumlah' => 'required|integer|min:1',
-            'tanggal_pinjam' => 'nullable|date',
-            'tenggat' => 'nullable|date',
-            'status' => 'required|in:dipinjam,dikembalikan,reservasi',
-        ]);
-    
-        $data = $request->all();
-    
-        // Tambah tanggal kembali
-        if ($data['status'] === 'dikembalikan' && $peminjaman->tanggal_kembali === null) {
-            $data['tanggal_kembali'] = now();
+{
+    $request->validate([
+        'status' => 'required',
+        // Validasi array rusak (jika ada)
+        'rusak' => 'nullable|array',
+        'rusak.*.nomor_buku' => 'required_with:rusak|string',
+        'rusak.*.jenis_kerusakan' => 'required_with:rusak|string',
+        'rusak.*.catatan' => 'nullable|string',
+    ]);
+
+    $data = $request->only(['status', 'tanggal_pinjam', 'tenggat']); // Ambil field yang perlu saja
+
+    // Logika Tanggal
+    if ($data['status'] === 'dikembalikan' && $peminjaman->tanggal_kembali === null) {
+        $data['tanggal_kembali'] = now();
+    }
+    if ($data['status'] === 'dipinjam' && empty($peminjaman->tanggal_pinjam)) {
+        $data['tanggal_pinjam'] = now();
+    }
+
+    // Cek Status Sebelumnya
+    $statusSebelumnya = $peminjaman->status;
+
+    // Update Data Peminjaman Utama
+    $peminjaman->update($data);
+
+    // === LOGIKA PENGEMBALIAN & BUKU RUSAK ===
+    // Jalankan logika ini HANYA jika status berubah menjadi 'dikembalikan'
+    // agar stok tidak bertambah berkali-kali jika tombol simpan ditekan ulang.
+    if ($statusSebelumnya !== 'dikembalikan' && $data['status'] === 'dikembalikan') {
+
+        $buku = Buku::find($peminjaman->buku_id);
+
+        // 1. Hitung Jumlah Buku Rusak
+        $daftarRusak = $request->input('rusak', []); // Ambil array rusak, default kosong
+        $jumlahRusak = count($daftarRusak);
+        $jumlahPinjam = $peminjaman->jumlah;
+
+        // Validasi Backend: Pastikan rusak tidak lebih dari pinjam
+        if ($jumlahRusak > $jumlahPinjam) {
+            return back()->withErrors(['msg' => 'Jumlah buku rusak melebihi jumlah peminjaman!']);
         }
-    
-        // Isi tanggal pinjam kalau dipinjam
-        if ($data['status'] === 'dipinjam' && empty($data['tanggal_pinjam'])) {
-            $data['tanggal_pinjam'] = now();
-        }
-    
-        $statusSebelumnya = $peminjaman->status;
-        
-        $peminjaman->update($data);
-    
-        // === Tambah stok buku saat dikembalikan ===
-        if ($statusSebelumnya !== 'dikembalikan' && $data['status'] === 'dikembalikan') {
-            $buku = Buku::find($peminjaman->buku_id);
-            $buku->stok += $peminjaman->jumlah;
+
+        // 2. Hitung yang kembali ke Stok (Bagus)
+        // Rumus: Stok Kembali = Pinjam - Rusak
+        $stokKembali = $jumlahPinjam - $jumlahRusak;
+
+        // 3. Update Stok Buku
+        if ($stokKembali > 0) {
+            $buku->stok += $stokKembali;
             $buku->save();
         }
-    
-        return redirect()->route('pengembalian.index')->with('success', 'Data peminjaman berhasil diperbarui.');
+
+        // 4. Simpan Data Kerusakan (Buku yang rusak tidak masuk stok)
+        if ($jumlahRusak > 0) {
+            foreach ($daftarRusak as $item) {
+                BukuRusak::create([
+                    'peminjaman_id' => $peminjaman->id,
+                    'buku_id' => $peminjaman->buku_id,
+                    'nomor_buku' => $item['nomor_buku'],
+                    'jenis_kerusakan' => $item['jenis_kerusakan'],
+                    'catatan' => $item['catatan'],
+                ]);
+            }
+        }
     }
-    
+
+    return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman diperbarui. ' . (isset($jumlahRusak) && $jumlahRusak > 0 ? "$jumlahRusak buku dicatat rusak." : ""));
+}
 
     public function destroy(Peminjaman $peminjaman)
     {
@@ -357,4 +394,301 @@ class PeminjamanController extends Controller
         return view('pengembalian.index', compact('peminjamans'));
     }
 
+    private function getFilteredData(Request $request)
+    {
+        $query = Peminjaman::with(['user', 'buku']);
+
+        if ($request->filled('tanggal_awal')) {
+            $query->whereDate('tanggal_pinjam', '>=', $request->tanggal_awal);
+        }
+
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate('tanggal_pinjam', '<=', $request->tanggal_akhir);
+        }
+
+        if ($request->filled('status') && $request->status != 'semua') {
+            $query->where('status', $request->status);
+        }
+
+        return $query->latest('tanggal_pinjam')->get();
+    }
+
+    public function laporan(Request $request)
+    {
+        $peminjamans = $this->getFilteredData($request);
+        return view('peminjaman.laporan', compact('peminjamans'));
+    }
+
+    // --- DOWNLOAD EXCEL TANPA LIBRARY ---
+    public function download(Request $request)
+    {
+        $data = $this->getFilteredData($request);
+        $jenis = $request->input('jenis');
+        $namaFile = 'Laporan_Peminjaman_' . date('d-m-Y');
+
+        // 1. PDF (Pakai DomPDF)
+        if ($jenis == 'pdf') {
+            $pdf = Pdf::loadView('peminjaman.pdf', ['peminjamans' => $data]);
+            return $pdf->download($namaFile . '.pdf');
+        }
+
+        // 2. EXCEL (Pakai HTML Table Trick - Tanpa Library Maatwebsite)
+        elseif ($jenis == 'excel') {
+            $headers = [
+                "Content-Type" => "application/vnd.ms-excel",
+                "Content-Disposition" => "attachment; filename=\"$namaFile.xls\"",
+                "Pragma" => "no-cache",
+                "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+                "Expires" => "0"
+            ];
+
+            $callback = function() use($data) {
+                $file = fopen('php://output', 'w');
+
+                // Header HTML agar dibaca sebagai Excel
+                fwrite($file, '<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+                <head><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+                <style>table{border-collapse:collapse;} td,th{border:1px solid #000; padding:5px;}</style>
+                </head><body><table>');
+
+                // Judul Kolom
+                fwrite($file, '<thead><tr>
+                    <th style="background-color:#eee;">No</th>
+                    <th style="background-color:#eee;">Nama Peminjam</th>
+                    <th style="background-color:#eee;">Judul Buku</th>
+                    <th style="background-color:#eee;">Jumlah</th>
+                    <th style="background-color:#eee;">Tgl Pinjam</th>
+                    <th style="background-color:#eee;">Tenggat</th>
+                    <th style="background-color:#eee;">Tgl Kembali</th>
+                    <th style="background-color:#eee;">Status</th>
+                    <th style="background-color:#eee;">Denda</th>
+                </tr></thead><tbody>');
+
+                // Isi Data
+                foreach ($data as $key => $row) {
+                    fwrite($file, '<tr>
+                        <td align="center">' . ($key + 1) . '</td>
+                        <td>' . ($row->user->name ?? '-') . '</td>
+                        <td>' . ($row->buku->judul ?? '-') . '</td>
+                        <td align="center">' . $row->jumlah . '</td>
+                        <td align="center">' . ($row->tanggal_pinjam ? $row->tanggal_pinjam->format('d-m-Y') : '-') . '</td>
+                        <td align="center">' . ($row->tenggat ? $row->tenggat->format('d-m-Y') : '-') . '</td>
+                        <td align="center">' . ($row->tanggal_kembali ? $row->tanggal_kembali->format('d-m-Y') : '-') . '</td>
+                        <td align="center">' . ucfirst($row->status) . '</td>
+                        <td align="right">' . ($row->denda ?? 0) . '</td>
+                    </tr>');
+                }
+
+                fwrite($file, '</tbody></table></body></html>');
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        // 3. CSV (Optional)
+        elseif ($jenis == 'csv') {
+             $headers = [
+                "Content-type" => "text/csv",
+                "Content-Disposition" => "attachment; filename=$namaFile.csv",
+            ];
+            $columns = ['No', 'Nama', 'Buku', 'Jml', 'Tgl Pinjam', 'Tenggat', 'Tgl Kembali', 'Status', 'Denda'];
+            $callback = function() use($data, $columns) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, $columns);
+                foreach ($data as $key => $row) {
+                    fputcsv($file, [
+                        $key + 1,
+                        $row->user->name ?? '-',
+                        $row->buku->judul ?? '-',
+                        $row->jumlah,
+                        $row->tanggal_pinjam ? $row->tanggal_pinjam->format('d-m-Y') : '-',
+                        $row->tenggat ? $row->tenggat->format('d-m-Y') : '-',
+                        $row->tanggal_kembali ? $row->tanggal_kembali->format('d-m-Y') : '-',
+                        ucfirst($row->status),
+                        $row->denda ?? 0
+                    ]);
+                }
+                fclose($file);
+            };
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return redirect()->back();
+    }
+
+    private function getFilteredPengembalian(Request $request)
+    {
+        // Ambil hanya yang statusnya 'dikembalikan'
+        $query = Peminjaman::with(['user', 'buku'])
+            ->where('status', 'dikembalikan');
+
+        // Filter Berdasarkan Tanggal KEMBALI (Bukan tanggal pinjam)
+        if ($request->filled('tanggal_awal')) {
+            $query->whereDate('tanggal_kembali', '>=', $request->tanggal_awal);
+        }
+
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate('tanggal_kembali', '<=', $request->tanggal_akhir);
+        }
+
+        // Urutkan dari pengembalian terbaru
+        return $query->orderBy('tanggal_kembali', 'desc')->get();
+    }
+
+    public function laporanPengembalian(Request $request)
+    {
+        $peminjamans = $this->getFilteredPengembalian($request);
+        return view('pengembalian.laporan', compact('peminjamans'));
+    }
+
+    public function downloadPengembalian(Request $request)
+    {
+        $data = $this->getFilteredPengembalian($request);
+        $jenis = $request->input('jenis');
+        $namaFile = 'Laporan_Pengembalian_' . date('d-m-Y');
+
+        // 1. PDF (Pakai DomPDF)
+        if ($jenis == 'pdf') {
+            $pdf = Pdf::loadView('pengembalian.pdf', ['peminjamans' => $data]);
+            return $pdf->download($namaFile . '.pdf');
+        }
+
+        // 2. EXCEL (Native PHP - Tanpa Library)
+        elseif ($jenis == 'excel') {
+            $headers = [
+                "Content-Type" => "application/vnd.ms-excel",
+                "Content-Disposition" => "attachment; filename=\"$namaFile.xls\"",
+                "Pragma" => "no-cache",
+                "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+                "Expires" => "0"
+            ];
+
+            $callback = function() use($data) {
+                $file = fopen('php://output', 'w');
+
+                // Header HTML Excel
+                fwrite($file, '<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+                <head><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+                <style>table{border-collapse:collapse;} td,th{border:1px solid #000; padding:5px;}</style>
+                </head><body><table>');
+
+                // Judul Kolom
+                fwrite($file, '<thead><tr>
+                    <th style="background:#eee;">No</th>
+                    <th style="background:#eee;">Nama Peminjam</th>
+                    <th style="background:#eee;">Judul Buku</th>
+                    <th style="background:#eee;">Jml</th>
+                    <th style="background:#eee;">Tgl Pinjam</th>
+                    <th style="background:#eee;">Tgl Kembali</th>
+                    <th style="background:#eee;">Denda</th>
+                </tr></thead><tbody>');
+
+                // Isi Data
+                foreach ($data as $key => $row) {
+                    fwrite($file, '<tr>
+                        <td align="center">' . ($key + 1) . '</td>
+                        <td>' . ($row->user->name ?? '-') . '</td>
+                        <td>' . ($row->buku->judul ?? '-') . '</td>
+                        <td align="center">' . $row->jumlah . '</td>
+                        <td align="center">' . ($row->tanggal_pinjam ? $row->tanggal_pinjam->format('d-m-Y') : '-') . '</td>
+                        <td align="center">' . ($row->tanggal_kembali ? $row->tanggal_kembali->format('d-m-Y') : '-') . '</td>
+                        <td align="right">' . ($row->denda ?? 0) . '</td>
+                    </tr>');
+                }
+
+                fwrite($file, '</tbody></table></body></html>');
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return redirect()->back();
+    }
+    private function getFilteredDenda(Request $request)
+    {
+        // Ambil data yang dendanya LEBIH DARI 0
+        $query = Peminjaman::with(['user', 'buku'])
+            ->where('denda', '>', 0);
+
+        // Filter Berdasarkan Tanggal Kembali (Karena denda muncul saat kembali)
+        if ($request->filled('tanggal_awal')) {
+            $query->whereDate('tanggal_kembali', '>=', $request->tanggal_awal);
+        }
+
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate('tanggal_kembali', '<=', $request->tanggal_akhir);
+        }
+
+        // Urutkan dari denda terbesar (biar kelihatan siapa yang bayar banyak)
+        return $query->orderBy('tanggal_kembali', 'desc')->get();
+    }
+
+    public function laporanDenda(Request $request)
+    {
+        $dendas = $this->getFilteredDenda($request);
+        return view('denda.laporan', compact('dendas'));
+    }
+
+    public function downloadDenda(Request $request)
+    {
+        $data = $this->getFilteredDenda($request);
+        $jenis = $request->input('jenis');
+        $namaFile = 'Laporan_Denda_' . date('d-m-Y');
+
+        // 1. PDF
+        if ($jenis == 'pdf') {
+            $pdf = Pdf::loadView('denda.pdf', ['dendas' => $data]);
+            return $pdf->download($namaFile . '.pdf');
+        }
+
+        // 2. EXCEL (Native PHP)
+        elseif ($jenis == 'excel') {
+            $headers = [
+                "Content-Type" => "application/vnd.ms-excel",
+                "Content-Disposition" => "attachment; filename=\"$namaFile.xls\"",
+                "Pragma" => "no-cache",
+                "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+                "Expires" => "0"
+            ];
+
+            $callback = function() use($data) {
+                $file = fopen('php://output', 'w');
+
+                fwrite($file, '<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+                <head><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+                <style>table{border-collapse:collapse;} td,th{border:1px solid #000; padding:5px;}</style>
+                </head><body><table>');
+
+                // Judul Kolom
+                fwrite($file, '<thead><tr>
+                    <th style="background:#eee;">No</th>
+                    <th style="background:#eee;">Nama Peminjam</th>
+                    <th style="background:#eee;">Judul Buku</th>
+                    <th style="background:#eee;">Total Buku</th>
+                    <th style="background:#eee;">Tgl Kembali</th>
+                    <th style="background:#eee;">Total Denda</th>
+                </tr></thead><tbody>');
+
+                foreach ($data as $key => $row) {
+                    fwrite($file, '<tr>
+                        <td align="center">' . ($key + 1) . '</td>
+                        <td>' . ($row->user->name ?? '-') . '</td>
+                        <td>' . ($row->buku->judul ?? '-') . '</td>
+                        <td align="center">' . $row->jumlah . '</td>
+                        <td align="center">' . ($row->tanggal_kembali ? $row->tanggal_kembali->format('d/m/Y') : '-') . '</td>
+                        <td align="right">' . ($row->denda ?? 0) . '</td>
+                    </tr>');
+                }
+
+                fwrite($file, '</tbody></table></body></html>');
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return redirect()->back();
+    }
 }
